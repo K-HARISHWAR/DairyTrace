@@ -1,4 +1,5 @@
 enum AlertSeverity {
+  info,
   low,
   medium,
   high,
@@ -6,28 +7,22 @@ enum AlertSeverity {
 
   factory AlertSeverity.fromString(String severity) {
     switch (severity) {
-      case 'medium':
-        return AlertSeverity.medium;
-      case 'high':
-        return AlertSeverity.high;
-      case 'critical':
-        return AlertSeverity.critical;
-      case 'low':
-      default:
-        return AlertSeverity.low;
+      case 'info': return AlertSeverity.info;
+      case 'low': return AlertSeverity.low;
+      case 'medium': return AlertSeverity.medium;
+      case 'high': return AlertSeverity.high;
+      case 'critical': return AlertSeverity.critical;
+      default: return AlertSeverity.info;
     }
   }
 
   String get value {
     switch (this) {
-      case AlertSeverity.low:
-        return 'low';
-      case AlertSeverity.medium:
-        return 'medium';
-      case AlertSeverity.high:
-        return 'high';
-      case AlertSeverity.critical:
-        return 'critical';
+      case AlertSeverity.info: return 'info';
+      case AlertSeverity.low: return 'low';
+      case AlertSeverity.medium: return 'medium';
+      case AlertSeverity.high: return 'high';
+      case AlertSeverity.critical: return 'critical';
     }
   }
 }

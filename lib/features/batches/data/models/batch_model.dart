@@ -1,66 +1,92 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/enums/batch_stage.dart';
+import '../../../../core/enums/batch_status.dart';
 import '../../../../core/enums/quality_result.dart';
 
 class BatchModel extends Equatable {
   final String id;
-  final String? batchCode;
-  final String? qrToken;
+  final String batchCode;
+  final String publicToken;
   final String farmId;
-  final double quantityLiters;
-  final double? temperatureCelsius;
-  final double? fatPercentage;
-  final double? snfPercentage;
-  final QualityResult qualityResult;
-  final BatchStage stage;
+  final String collectionCentreId;
+  final double quantityLitres;
+  final DateTime collectionTime;
+  final BatchStage currentStage;
+  final BatchStatus overallStatus;
+  final QualityStatus qualityStatus;
   final String? notes;
+  final String createdBy;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   const BatchModel({
     required this.id,
-    this.batchCode,
-    this.qrToken,
+    required this.batchCode,
+    required this.publicToken,
     required this.farmId,
-    required this.quantityLiters,
-    this.temperatureCelsius,
-    this.fatPercentage,
-    this.snfPercentage,
-    required this.qualityResult,
-    required this.stage,
+    required this.collectionCentreId,
+    required this.quantityLitres,
+    required this.collectionTime,
+    required this.currentStage,
+    required this.overallStatus,
+    required this.qualityStatus,
     this.notes,
+    required this.createdBy,
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory BatchModel.fromJson(Map<String, dynamic> json) {
     return BatchModel(
       id: json['id'],
-      batchCode: json['batch_code'],
-      qrToken: json['qr_token'],
+      batchCode: json['batch_code'] ?? '',
+      publicToken: json['public_token'] ?? '',
       farmId: json['farm_id'],
-      quantityLiters: (json['quantity_liters'] as num).toDouble(),
-      temperatureCelsius: json['temperature_celsius'] != null ? (json['temperature_celsius'] as num).toDouble() : null,
-      fatPercentage: json['fat_percentage'] != null ? (json['fat_percentage'] as num).toDouble() : null,
-      snfPercentage: json['snf_percentage'] != null ? (json['snf_percentage'] as num).toDouble() : null,
-      qualityResult: QualityResult.fromString(json['quality_result']),
-      stage: BatchStage.fromString(json['stage']),
+      collectionCentreId: json['collection_centre_id'],
+      quantityLitres: (json['quantity_litres'] as num).toDouble(),
+      collectionTime: DateTime.parse(json['collection_time']),
+      currentStage: BatchStage.fromString(json['current_stage']),
+      overallStatus: BatchStatus.fromString(json['overall_status']),
+      qualityStatus: QualityStatus.fromString(json['quality_status']),
       notes: json['notes'],
+      createdBy: json['created_by'],
       createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'batch_code': batchCode,
+      'public_token': publicToken,
+      'farm_id': farmId,
+      'collection_centre_id': collectionCentreId,
+      'quantity_litres': quantityLitres,
+      'collection_time': collectionTime.toIso8601String(),
+      'current_stage': currentStage.value,
+      'overall_status': overallStatus.value,
+      'quality_status': qualityStatus.value,
+      'notes': notes,
+      'created_by': createdBy,
+    };
   }
 
   @override
   List<Object?> get props => [
         id,
         batchCode,
-        qrToken,
+        publicToken,
         farmId,
-        quantityLiters,
-        temperatureCelsius,
-        fatPercentage,
-        snfPercentage,
-        qualityResult,
-        stage,
+        collectionCentreId,
+        quantityLitres,
+        collectionTime,
+        currentStage,
+        overallStatus,
+        qualityStatus,
         notes,
+        createdBy,
         createdAt,
+        updatedAt,
       ];
 }

@@ -14,33 +14,39 @@ class SplashScreen extends ConsumerWidget {
       if (next == null) return;
       if (!next.isLoading) {
         if (next.hasError || next.value == null) {
-          context.goNamed(RouteNames.login);
+          context.goNamed(RouteNames.welcome);
         } else {
-          final role = next.value!.role;
+          final profile = next.value!;
+          if (!profile.isActive) {
+            context.goNamed(RouteNames.inactiveAccount);
+            return;
+          }
+          final role = profile.role;
           if (role == UserRole.admin) {
             context.goNamed(RouteNames.adminDashboard);
           } else if (role == UserRole.collectionStaff) {
-            context.goNamed(RouteNames.staffDashboard);
+            context.goNamed(RouteNames.collectionDashboard);
           } else if (role == UserRole.distributor) {
             context.goNamed(RouteNames.distributorDashboard);
           } else {
-            context.goNamed(RouteNames.publicScan);
+            context.goNamed(RouteNames.welcome);
           }
         }
       }
     });
 
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.water_drop, size: 100, color: Colors.blue),
-            SizedBox(height: 24),
-            CircularProgressIndicator(),
+            Image.asset('assets/images/logo.png', height: 120),
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
           ],
         ),
       ),
     );
   }
 }
+

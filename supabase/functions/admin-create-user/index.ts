@@ -25,10 +25,23 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { data: profile } = await supabaseAdmin.from('users').select('role').eq('id', user.id).single()
+    const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single()
     if (profile?.role !== 'admin') throw new Error('Not an admin')
 
-    const { email, password, full_name, phone, role } = await req.json()
+    const body = await req.json();
+    const { email, password, fullName, phone, role, collectionCentreId, distributorOrganisationId } = body;
+
+    if (!['collection_staff', 'distributor'].includes(role)) {
+       throw new Error('Invalid role');
+    }
+
+    if (role === 'collection_staff' && !collectionCentreId) {
+       throw new Error('Collection staff must have a collectionCentreId');
+    }
+
+    if (role === 'distributor' && !distributorOrganisationId) {
+       throw new Error('Distributor must have a distributorOrganisationId');
+    }
 
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -38,19 +51,21 @@ serve(async (req: Request) => {
 
     if (authError) throw authError
 
-    // Insert profile, but we need to do this explicitly if we want to ensure it completes, 
-    // although we could also use an insert trigger. Here we'll do it manually.
-    // Wait, the public.users insert might conflict if we later add a trigger on auth.users insert.
-    // Let's just update the profile created by a potential trigger, or insert it.
-    const { error: profileError } = await supabaseAdmin.from('users').upsert({
+    const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
       id: authData.user.id,
       email,
-      full_name,
+      full_name: fullName,
       phone,
-      role
+      role,
+      collection_centre_id: role === 'collection_staff' ? collectionCentreId : null,
+      distributor_organisation_id: role === 'distributor' ? distributorOrganisationId : null
     })
 
-    if (profileError) throw profileError
+    if (profileError) {
+      // rollback user creation
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      throw profileError
+    }
 
     return new Response(JSON.stringify({ user: authData.user }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

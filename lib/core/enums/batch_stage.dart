@@ -1,49 +1,31 @@
 enum BatchStage {
-  registered,
-  qualityCheck,
-  accepted,
-  rejected,
-  inTransit,
-  delayed,
+  collection,
+  chilling,
+  processing,
+  packaging,
+  distribution,
   delivered;
 
   factory BatchStage.fromString(String stage) {
     switch (stage) {
-      case 'registered':
-        return BatchStage.registered;
-      case 'quality_check':
-        return BatchStage.qualityCheck;
-      case 'accepted':
-        return BatchStage.accepted;
-      case 'rejected':
-        return BatchStage.rejected;
-      case 'in_transit':
-        return BatchStage.inTransit;
-      case 'delayed':
-        return BatchStage.delayed;
-      case 'delivered':
-        return BatchStage.delivered;
-      default:
-        return BatchStage.registered;
+      case 'collection': return BatchStage.collection;
+      case 'chilling': return BatchStage.chilling;
+      case 'processing': return BatchStage.processing;
+      case 'packaging': return BatchStage.packaging;
+      case 'distribution': return BatchStage.distribution;
+      case 'delivered': return BatchStage.delivered;
+      default: return BatchStage.collection;
     }
   }
 
   String get value {
     switch (this) {
-      case BatchStage.registered:
-        return 'registered';
-      case BatchStage.qualityCheck:
-        return 'quality_check';
-      case BatchStage.accepted:
-        return 'accepted';
-      case BatchStage.rejected:
-        return 'rejected';
-      case BatchStage.inTransit:
-        return 'in_transit';
-      case BatchStage.delayed:
-        return 'delayed';
-      case BatchStage.delivered:
-        return 'delivered';
+      case BatchStage.collection: return 'collection';
+      case BatchStage.chilling: return 'chilling';
+      case BatchStage.processing: return 'processing';
+      case BatchStage.packaging: return 'packaging';
+      case BatchStage.distribution: return 'distribution';
+      case BatchStage.delivered: return 'delivered';
     }
   }
 }

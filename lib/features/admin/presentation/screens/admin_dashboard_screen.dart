@@ -1,76 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/services/supabase_service.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/router/route_names.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-
-final adminStatsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-  final client = ref.watch(supabaseServiceProvider).client;
-  final res = await client.rpc('get_admin_dashboard_stats');
-  return res as Map<String, dynamic>;
-});
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statsAsyncValue = ref.watch(adminStatsProvider);
+    final theme = Theme.of(context);
+    final user = ref.watch(authStateProvider).value;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => ref.refresh(adminStatsProvider),
-          ),
-          IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authStateProvider.notifier).signOut(),
-          )
+            onPressed: () {
+              ref.read(authStateProvider.notifier).signOut();
+            },
+          ),
         ],
       ),
-      body: statsAsyncValue.when(
-        data: (stats) {
-          return GridView.count(
-            crossAxisCount: 2,
-            padding: const EdgeInsets.all(16),
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildStatCard('Total Batches', stats['total_batches'].toString(), Colors.blue),
-              _buildStatCard('Rejected Batches', stats['rejected_batches'].toString(), Colors.red),
-              _buildStatCard('Active Alerts', stats['active_alerts'].toString(), Colors.orange),
-              _buildStatCard('Total Farms', stats['total_farms'].toString(), Colors.green),
+              Text(
+                'Welcome, ${user?.fullName ?? "Admin"}',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildDashboardGrid(context, theme),
             ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text('Error: $err')),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, Color color) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.7), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+  Widget _buildDashboardGrid(BuildContext context, ThemeData theme) {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        _buildDashboardCard(
+          context,
+          title: 'Users & Roles',
+          icon: Icons.people_outline,
+          color: theme.colorScheme.primary,
+          onTap: () => context.pushNamed(RouteNames.adminUsers),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(value, style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 8),
-            Text(title, style: const TextStyle(fontSize: 16, color: Colors.white), textAlign: TextAlign.center),
-          ],
+        _buildDashboardCard(
+          context,
+          title: 'System Alerts',
+          icon: Icons.warning_amber_rounded,
+          color: theme.colorScheme.error,
+          onTap: () {},
+        ),
+        _buildDashboardCard(
+          context,
+          title: 'All Batches',
+          icon: Icons.local_drink_outlined,
+          color: theme.colorScheme.secondary,
+          onTap: () {},
+        ),
+        _buildDashboardCard(
+          context,
+          title: 'Farms & Centers',
+          icon: Icons.agriculture_outlined,
+          color: theme.colorScheme.tertiary,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDashboardCard(BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 32, color: color),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,12 +1,13 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/user_model.dart';
+import '../../data/models/profile_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
-final authStateProvider = AsyncNotifierProvider<AuthNotifier, UserModel?>(AuthNotifier.new);
+final authStateProvider = AsyncNotifierProvider<AuthNotifier, ProfileModel?>(AuthNotifier.new);
 
-class AuthNotifier extends AsyncNotifier<UserModel?> {
+class AuthNotifier extends AsyncNotifier<ProfileModel?> {
   @override
-  FutureOr<UserModel?> build() async {
+  FutureOr<ProfileModel?> build() async {
     return ref.watch(authRepositoryProvider).getCurrentUser();
   }
 

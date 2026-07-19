@@ -4,7 +4,7 @@ import '../../../../core/constants/database_tables.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../models/batch_model.dart';
 import '../../../../core/enums/batch_stage.dart';
-import '../../../../core/enums/quality_result.dart';
+import '../../../../core/enums/batch_status.dart';
 
 final batchRepositoryProvider = Provider<BatchRepository>((ref) {
   return BatchRepository(ref.watch(supabaseServiceProvider).client);
@@ -15,46 +15,58 @@ class BatchRepository {
 
   BatchRepository(this._client);
 
-  Future<List<BatchModel>> getBatches() async {
-    final data = await _client
-        .from(DatabaseTables.batches)
-        .select()
-        .order('created_at', ascending: false);
+  Future<List<BatchModel>> getBatches({String? collectionCentreId, BatchStatus? status}) async {
+    var query = _client.from(DatabaseTables.batches).select();
     
+    if (collectionCentreId != null) {
+      query = query.eq('collection_centre_id', collectionCentreId);
+    }
+    if (status != null) {
+      query = query.eq('overall_status', status.value);
+    }
+    
+    final data = await query.order('created_at', ascending: false);
     return (data as List).map((e) => BatchModel.fromJson(e)).toList();
+  }
+
+  Future<BatchModel> getBatchById(String id) async {
+    final data = await _client.from(DatabaseTables.batches).select().eq('id', id).single();
+    return BatchModel.fromJson(data);
+  }
+
+  Future<BatchModel> getBatchByPublicToken(String token) async {
+    final data = await _client.from(DatabaseTables.batches).select().eq('public_token', token).single();
+    return BatchModel.fromJson(data);
   }
 
   Future<BatchModel> createBatch({
     required String farmId,
-    required double quantityLiters,
-    required double temperature,
-    required double fat,
-    required double snf,
-    required QualityResult qualityResult,
+    required String collectionCentreId,
+    required double quantityLitres,
+    required DateTime collectionTime,
+    String? notes,
   }) async {
     final userId = _client.auth.currentUser!.id;
-    final stage = qualityResult == QualityResult.pass ? BatchStage.accepted : BatchStage.rejected;
 
     final data = await _client.from(DatabaseTables.batches).insert({
       'farm_id': farmId,
+      'collection_centre_id': collectionCentreId,
+      'quantity_litres': quantityLitres,
+      'collection_time': collectionTime.toIso8601String(),
       'created_by': userId,
-      'quantity_liters': quantityLiters,
-      'temperature_celsius': temperature,
-      'fat_percentage': fat,
-      'snf_percentage': snf,
-      'quality_result': qualityResult.value,
-      'stage': stage.value,
-      'notes': 'Initial quality check performed.',
+      'notes': notes,
     }).select().single();
 
     final batch = BatchModel.fromJson(data);
 
-    // Record initial journey
-    await _client.from(DatabaseTables.batchJourneys).insert({
+    // Initial tracking event
+    await _client.from(DatabaseTables.trackingEvents).insert({
       'batch_id': batch.id,
-      'stage': stage.value,
-      'recorded_by': userId,
-      'notes': 'Batch registered at Collection Center',
+      'stage': BatchStage.collection.value,
+      'event_type': 'batch_created',
+      'status': 'registered',
+      'created_by': userId,
+      'remarks': 'Batch collected from farm',
     });
 
     return batch;
@@ -63,25 +75,31 @@ class BatchRepository {
   Future<void> updateBatchStage({
     required String batchId,
     required BatchStage newStage,
-    double? lat,
-    double? lng,
-    String? notes,
+    required String eventType,
+    required String status,
+    String? locationName,
+    double? latitude,
+    double? longitude,
+    String? remarks,
   }) async {
     final userId = _client.auth.currentUser!.id;
     
     // Update batch stage
     await _client.from(DatabaseTables.batches).update({
-      'stage': newStage.value,
+      'current_stage': newStage.value,
     }).eq('id', batchId);
 
-    // Record journey
-    await _client.from(DatabaseTables.batchJourneys).insert({
+    // Record journey event
+    await _client.from(DatabaseTables.trackingEvents).insert({
       'batch_id': batchId,
       'stage': newStage.value,
-      'recorded_by': userId,
-      'location_lat': lat,
-      'location_lng': lng,
-      'notes': notes,
+      'event_type': eventType,
+      'status': status,
+      'created_by': userId,
+      'location_name': locationName,
+      'latitude': latitude,
+      'longitude': longitude,
+      'remarks': remarks,
     });
   }
 }

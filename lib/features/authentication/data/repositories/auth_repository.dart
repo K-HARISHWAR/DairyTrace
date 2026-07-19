@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/database_tables.dart';
 import '../../../../core/services/supabase_service.dart';
-import '../models/user_model.dart';
+import '../models/profile_model.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.watch(supabaseServiceProvider).client);
@@ -13,7 +13,7 @@ class AuthRepository {
 
   AuthRepository(this._client);
 
-  Future<UserModel> signIn(String email, String password) async {
+  Future<ProfileModel> signIn(String email, String password) async {
     final response = await _client.auth.signInWithPassword(
       email: email,
       password: password,
@@ -26,17 +26,17 @@ class AuthRepository {
     return _fetchUserProfile(response.user!.id);
   }
 
-  Future<UserModel> _fetchUserProfile(String userId) async {
+  Future<ProfileModel> _fetchUserProfile(String userId) async {
     final data = await _client
-        .from(DatabaseTables.users)
+        .from(DatabaseTables.profiles)
         .select()
         .eq('id', userId)
         .single();
     
-    return UserModel.fromJson(data);
+    return ProfileModel.fromJson(data);
   }
 
-  Future<UserModel?> getCurrentUser() async {
+  Future<ProfileModel?> getCurrentUser() async {
     final user = _client.auth.currentUser;
     if (user == null) return null;
     return _fetchUserProfile(user.id);
