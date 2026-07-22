@@ -11,14 +11,25 @@ serve(async (req: Request) => {
   }
 
   try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error('Missing Authorization header');
+    const token = authHeader.replace('Bearer ', '');
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-    if (userError || !user) throw new Error('Unauthorized')
+    let user;
+    try {
+      const { data, error } = await supabaseClient.auth.getUser(token)
+      if (error) throw error;
+      user = data.user;
+    } catch (e) {
+      throw new Error('getUser failed: ' + (e as Error).message);
+    }
+    
+    if (!user) throw new Error('Unauthorized: No user found')
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -29,17 +40,17 @@ serve(async (req: Request) => {
     if (profile?.role !== 'admin') throw new Error('Not an admin')
 
     const body = await req.json();
-    const { email, password, fullName, phone, role, collectionCentreId, distributorOrganisationId } = body;
+    const { email, password, full_name, phone, role, collection_centre_id, distributor_organisation_id } = body;
 
     if (!['collection_staff', 'distributor'].includes(role)) {
        throw new Error('Invalid role');
     }
 
-    if (role === 'collection_staff' && !collectionCentreId) {
+    if (role === 'collection_staff' && !collection_centre_id) {
        throw new Error('Collection staff must have a collectionCentreId');
     }
 
-    if (role === 'distributor' && !distributorOrganisationId) {
+    if (role === 'distributor' && !distributor_organisation_id) {
        throw new Error('Distributor must have a distributorOrganisationId');
     }
 
@@ -54,11 +65,11 @@ serve(async (req: Request) => {
     const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
       id: authData.user.id,
       email,
-      full_name: fullName,
+      full_name: full_name,
       phone,
       role,
-      collection_centre_id: role === 'collection_staff' ? collectionCentreId : null,
-      distributor_organisation_id: role === 'distributor' ? distributorOrganisationId : null
+      collection_centre_id: role === 'collection_staff' ? collection_centre_id : null,
+      distributor_organisation_id: role === 'distributor' ? distributor_organisation_id : null
     })
 
     if (profileError) {

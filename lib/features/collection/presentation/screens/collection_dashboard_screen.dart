@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../providers/collection_dashboard_provider.dart';
 
 class CollectionDashboardScreen extends ConsumerWidget {
   const CollectionDashboardScreen({super.key});
@@ -18,8 +19,11 @@ class CollectionDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authStateProvider.notifier).signOut();
+            onPressed: () async {
+              await ref.read(authStateProvider.notifier).signOut();
+              if (context.mounted) {
+                context.goNamed(RouteNames.welcome);
+              }
             },
           ),
         ],
@@ -38,6 +42,10 @@ class CollectionDashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
+              _buildKPISection(context, ref, theme),
+              const SizedBox(height: 24),
+              Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
               GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
@@ -126,6 +134,74 @@ class CollectionDashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKPISection(BuildContext context, WidgetRef ref, ThemeData theme) {
+    final statsAsync = ref.watch(collectionDashboardStatsProvider);
+    
+    return statsAsync.when(
+      data: (stats) {
+        return GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          shrinkWrap: true,
+          childAspectRatio: 1.5,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            _buildKPICard(theme, 'Today\'s Litres', '${stats['todayTotalLitres'] ?? 0} L', Icons.water_drop, color: Colors.blue),
+            _buildKPICard(theme, 'Today\'s Batches', '${stats['todayBatchCount'] ?? 0}', Icons.list_alt),
+            _buildKPICard(theme, 'Accepted', '${stats['acceptedCount'] ?? 0}', Icons.check_circle, color: Colors.green),
+            _buildKPICard(theme, 'Rejected', '${stats['rejectedCount'] ?? 0}', Icons.cancel, color: Colors.red),
+            _buildKPICard(theme, 'Pending Quality', '${stats['pendingQualityCount'] ?? 0}', Icons.science, color: Colors.orange),
+            _buildKPICard(theme, 'Unresolved Alerts', '${stats['unresolvedAlerts'] ?? 0}', Icons.warning_amber, color: Colors.redAccent),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error loading stats: $e', style: TextStyle(color: theme.colorScheme.error))),
+    );
+  }
+
+  Widget _buildKPICard(ThemeData theme, String title, String value, IconData icon, {Color? color}) {
+    final iconColor = color ?? theme.colorScheme.primary;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: iconColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              value,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ],
         ),
       ),
     );

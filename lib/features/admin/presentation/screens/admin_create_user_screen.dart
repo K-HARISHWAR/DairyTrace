@@ -19,6 +19,8 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
   UserRole _selectedRole = UserRole.collectionStaff;
+  String? _selectedCentreId;
+  String? _selectedDistributorId;
   
   bool _isLoading = false;
 
@@ -42,6 +44,8 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
         fullName: _fullNameController.text.trim(),
         role: _selectedRole.value,
         phone: _phoneController.text.trim(),
+        collectionCentreId: _selectedRole == UserRole.collectionStaff ? _selectedCentreId : null,
+        distributorId: _selectedRole == UserRole.distributor ? _selectedDistributorId : null,
       );
       
       // Refresh user list
@@ -111,6 +115,38 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
                   if (val != null) setState(() => _selectedRole = val);
                 },
               ),
+              if (_selectedRole == UserRole.collectionStaff) ...[
+                const SizedBox(height: 16),
+                ref.watch(activeCentresProvider).when(
+                  data: (centres) => DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Collection Centre'),
+                    items: centres.map((c) => DropdownMenuItem<String>(
+                      value: c['id'] as String,
+                      child: Text(c['name'] as String),
+                    )).toList(),
+                    onChanged: (val) => setState(() => _selectedCentreId = val),
+                    validator: (v) => v == null ? 'Please select a centre' : null,
+                  ),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (e, _) => Text('Error loading centres: $e'),
+                ),
+              ],
+              if (_selectedRole == UserRole.distributor) ...[
+                const SizedBox(height: 16),
+                ref.watch(activeDistributorsProvider).when(
+                  data: (distributors) => DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Distributor Organisation'),
+                    items: distributors.map((d) => DropdownMenuItem<String>(
+                      value: d['id'] as String,
+                      child: Text(d['name'] as String),
+                    )).toList(),
+                    onChanged: (val) => setState(() => _selectedDistributorId = val),
+                    validator: (v) => v == null ? 'Please select an organisation' : null,
+                  ),
+                  loading: () => const LinearProgressIndicator(),
+                  error: (e, _) => Text('Error loading distributors: $e'),
+                ),
+              ],
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,

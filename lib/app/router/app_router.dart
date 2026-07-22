@@ -11,6 +11,13 @@ import '../../features/admin/presentation/screens/admin_users_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_user_screen.dart';
 
 import '../../features/collection/presentation/screens/collection_dashboard_screen.dart';
+import '../../features/collection/presentation/screens/collection_farms_screen.dart';
+import '../../features/collection/presentation/screens/collection_create_farm_screen.dart';
+import '../../features/collection/presentation/screens/collection_batches_screen.dart';
+import '../../features/collection/presentation/screens/collection_create_batch_screen.dart';
+import '../../features/collection/presentation/screens/collection_batch_details_screen.dart';
+import '../../features/collection/presentation/screens/collection_batch_stage_update_screen.dart';
+import '../../features/batches/data/models/batch_model.dart';
 
 import '../../features/deliveries/presentation/screens/distributor_dashboard_screen.dart';
 import '../../features/public_trace/presentation/screens/public_scan_screen.dart';
@@ -75,6 +82,36 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/collection',
         name: RouteNames.collectionDashboard,
         builder: (context, state) => const CollectionDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/collection/farms',
+        name: RouteNames.collectionFarms,
+        builder: (context, state) => const CollectionFarmsScreen(),
+      ),
+      GoRoute(
+        path: '/collection/farms/create',
+        name: RouteNames.collectionCreateFarm,
+        builder: (context, state) => const CollectionCreateFarmScreen(),
+      ),
+      GoRoute(
+        path: '/collection/batches',
+        name: RouteNames.collectionBatches,
+        builder: (context, state) => const CollectionBatchesScreen(),
+      ),
+      GoRoute(
+        path: '/collection/batches/create',
+        name: RouteNames.collectionCreateBatch,
+        builder: (context, state) => const CollectionCreateBatchScreen(),
+      ),
+      GoRoute(
+        path: '/collection/batches/details',
+        name: RouteNames.collectionBatchDetails,
+        builder: (context, state) => CollectionBatchDetailsScreen(batch: state.extra as BatchModel),
+      ),
+      GoRoute(
+        path: '/collection/batches/update-stage',
+        name: RouteNames.collectionBatchStageUpdate,
+        builder: (context, state) => CollectionBatchStageUpdateScreen(batch: state.extra as BatchModel),
       ),
       // Distributor Module
       GoRoute(

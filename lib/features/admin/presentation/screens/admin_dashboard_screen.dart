@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
+import '../providers/admin_dashboard_provider.dart';
+import '../widgets/admin_dashboard_charts.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -18,8 +20,11 @@ class AdminDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authStateProvider.notifier).signOut();
+            onPressed: () async {
+              await ref.read(authStateProvider.notifier).signOut();
+              if (context.mounted) {
+                context.goNamed(RouteNames.welcome);
+              }
             },
           ),
         ],
@@ -38,11 +43,148 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
+              _buildKPISection(context, ref, theme),
+              const SizedBox(height: 24),
+              _buildChartsSection(context, ref, theme),
+              const SizedBox(height: 24),
+              Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
               _buildDashboardGrid(context, theme),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildKPISection(BuildContext context, WidgetRef ref, ThemeData theme) {
+    final statsAsyncValue = ref.watch(adminDashboardStatsProvider);
+    
+    return statsAsyncValue.when(
+      data: (stats) {
+        return GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          shrinkWrap: true,
+          childAspectRatio: 1.5,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            _buildKPICard(theme, 'Active Batches', stats['totalActiveBatches']?.toString() ?? '0', Icons.local_drink),
+            _buildKPICard(theme, 'Collected Today', stats['batchesCollectedToday']?.toString() ?? '0', Icons.today),
+            _buildKPICard(theme, 'Accepted', stats['acceptedBatches']?.toString() ?? '0', Icons.check_circle_outline, color: Colors.green),
+            _buildKPICard(theme, 'Rejected', stats['rejectedBatches']?.toString() ?? '0', Icons.cancel_outlined, color: Colors.red),
+            _buildKPICard(theme, 'In Transit', stats['inTransitDeliveries']?.toString() ?? '0', Icons.local_shipping_outlined),
+            _buildKPICard(theme, 'Delayed', stats['delayedDeliveries']?.toString() ?? '0', Icons.access_time_outlined, color: Colors.orange),
+            _buildKPICard(theme, 'Unresolved Alerts', stats['unresolvedAlerts']?.toString() ?? '0', Icons.warning_amber),
+            _buildKPICard(theme, 'Critical Alerts', stats['highCriticalAlerts']?.toString() ?? '0', Icons.error_outline, color: Colors.red),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Text('Failed to load stats: $error', style: TextStyle(color: theme.colorScheme.error)),
+    );
+  }
+
+  Widget _buildKPICard(ThemeData theme, String title, String value, IconData icon, {Color? color}) {
+    final iconColor = color ?? theme.colorScheme.primary;
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: iconColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              value,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChartsSection(BuildContext context, WidgetRef ref, ThemeData theme) {
+    final statsAsync = ref.watch(adminDashboardStatsProvider);
+    final volumeAsync = ref.watch(adminDailyVolumeProvider(7)); // last 7 days
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.grey.shade200),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Batch Status Overview', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  statsAsync.when(
+                    data: (stats) => DashboardStatusDoughnut(stats: stats),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('Error: $e'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          flex: 2,
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.grey.shade200),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('7-Day Collection Volume', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  volumeAsync.when(
+                    data: (data) => DashboardVolumeChart(data: data),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('Error: $e'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

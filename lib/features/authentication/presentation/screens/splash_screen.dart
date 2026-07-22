@@ -11,7 +11,6 @@ class SplashScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(authStateProvider, (previous, next) {
-      if (next == null) return;
       if (!next.isLoading) {
         if (next.hasError || next.value == null) {
           context.goNamed(RouteNames.welcome);

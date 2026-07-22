@@ -46,4 +46,33 @@ class AdminRepository {
     final profileData = await _client.from(DatabaseTables.profiles).select().eq('email', email).single();
     return ProfileModel.fromJson(profileData);
   }
+
+  Future<void> updateUserStatus(String userId, bool isActive) async {
+    await _client.from(DatabaseTables.profiles).update({'is_active': isActive}).eq('id', userId);
+  }
+
+  Future<List<Map<String, dynamic>>> getActiveCentres() async {
+    final data = await _client.from('collection_centres').select('id, name');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<List<Map<String, dynamic>>> getActiveDistributors() async {
+    final data = await _client.from('distributor_organisations').select('id, name');
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  Future<Map<String, dynamic>> getDashboardStats() async {
+    final response = await _client.rpc('get_admin_dashboard_stats');
+    return response as Map<String, dynamic>;
+  }
+
+  Future<List<Map<String, dynamic>>> getDailyCollectionVolume(int days) async {
+    final response = await _client.rpc('get_daily_collection_volume', params: {'days': days});
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  Future<List<Map<String, dynamic>>> getRejectionTrend(int days) async {
+    final response = await _client.rpc('get_rejection_trend', params: {'days': days});
+    return List<Map<String, dynamic>>.from(response);
+  }
 }

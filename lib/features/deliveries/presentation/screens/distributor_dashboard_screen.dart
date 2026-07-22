@@ -18,8 +18,11 @@ class DistributorDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authStateProvider.notifier).signOut();
+            onPressed: () async {
+              await ref.read(authStateProvider.notifier).signOut();
+              if (context.mounted) {
+                context.goNamed(RouteNames.welcome);
+              }
             },
           ),
         ],

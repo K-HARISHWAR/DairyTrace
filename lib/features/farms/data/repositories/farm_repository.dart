@@ -24,6 +24,30 @@ class FarmRepository {
     return (data as List).map((e) => FarmModel.fromJson(e)).toList();
   }
 
+  Future<List<FarmModel>> getFarmsPaginated({
+    required String collectionCentreId,
+    String? searchQuery,
+    bool? isActive,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    var query = _client.from(DatabaseTables.farms).select().eq('collection_centre_id', collectionCentreId);
+    
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      query = query.or('farm_name.ilike.%$searchQuery%,farm_code.ilike.%$searchQuery%,owner_name.ilike.%$searchQuery%,village.ilike.%$searchQuery%');
+    }
+
+    if (isActive != null) {
+      query = query.eq('is_active', isActive);
+    }
+
+    final from = (page - 1) * pageSize;
+    final to = from + pageSize - 1;
+
+    final data = await query.range(from, to).order('created_at', ascending: false);
+    return (data as List).map((e) => FarmModel.fromJson(e)).toList();
+  }
+
   Future<FarmModel> getFarmById(String id) async {
     final data = await _client.from(DatabaseTables.farms).select().eq('id', id).single();
     return FarmModel.fromJson(data);
