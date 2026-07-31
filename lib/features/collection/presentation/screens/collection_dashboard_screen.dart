@@ -4,12 +4,26 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/collection_dashboard_provider.dart';
+import '../../../../core/services/local_notification_service.dart';
 
-class CollectionDashboardScreen extends ConsumerWidget {
+class CollectionDashboardScreen extends ConsumerStatefulWidget {
   const CollectionDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CollectionDashboardScreen> createState() => _CollectionDashboardScreenState();
+}
+
+class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      LocalNotificationService().requestPermissions();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(authStateProvider).value;
 
@@ -42,7 +56,7 @@ class CollectionDashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildKPISection(context, ref, theme),
+              _buildKPISection(context, theme),
               const SizedBox(height: 24),
               Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
@@ -86,7 +100,7 @@ class CollectionDashboardScreen extends ConsumerWidget {
                     title: 'Alerts',
                     icon: Icons.notifications_active_outlined,
                     color: theme.colorScheme.error,
-                    onTap: () {},
+                    onTap: () => context.pushNamed(RouteNames.collectionAlerts),
                   ),
                 ],
               ),
@@ -139,7 +153,7 @@ class CollectionDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildKPISection(BuildContext context, WidgetRef ref, ThemeData theme) {
+  Widget _buildKPISection(BuildContext context, ThemeData theme) {
     final statsAsync = ref.watch(collectionDashboardStatsProvider);
     
     return statsAsync.when(

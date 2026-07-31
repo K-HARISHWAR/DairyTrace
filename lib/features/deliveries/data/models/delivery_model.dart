@@ -20,6 +20,12 @@ class DeliveryModel extends Equatable {
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  // Joined fields
+  final String? batchCode;
+  final double? quantityLitres;
+  final String? collectionCentreName;
+  final String? farmName;
 
   const DeliveryModel({
     required this.id,
@@ -40,6 +46,10 @@ class DeliveryModel extends Equatable {
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
+    this.batchCode,
+    this.quantityLitres,
+    this.collectionCentreName,
+    this.farmName,
   });
 
   factory DeliveryModel.fromJson(Map<String, dynamic> json) {
@@ -62,6 +72,10 @@ class DeliveryModel extends Equatable {
       createdBy: json['created_by'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
+      batchCode: json['batches']?['batch_code'],
+      quantityLitres: json['batches']?['quantity_litres'] != null ? (json['batches']['quantity_litres'] as num).toDouble() : null,
+      collectionCentreName: json['batches']?['collection_centres']?['name'],
+      farmName: json['batches']?['farms']?['farm_name'],
     );
   }
 

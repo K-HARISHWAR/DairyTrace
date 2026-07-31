@@ -18,10 +18,12 @@ import '../../features/collection/presentation/screens/collection_create_batch_s
 import '../../features/collection/presentation/screens/collection_batch_details_screen.dart';
 import '../../features/collection/presentation/screens/collection_batch_stage_update_screen.dart';
 import '../../features/batches/data/models/batch_model.dart';
+import '../../features/batches/presentation/screens/batch_qr_screen.dart';
 
 import '../../features/deliveries/presentation/screens/distributor_dashboard_screen.dart';
 import '../../features/public_trace/presentation/screens/public_scan_screen.dart';
 import '../../features/public_trace/presentation/screens/public_batch_screen.dart';
+import '../../features/alerts/presentation/screens/alerts_screen.dart';
 
 // Dummy placeholder for screens yet to be built
 class PlaceholderScreen extends StatelessWidget {
@@ -77,6 +79,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'admin_create_user',
         builder: (context, state) => const AdminCreateUserScreen(),
       ),
+      GoRoute(
+        path: '/admin/alerts',
+        name: RouteNames.adminAlerts,
+        builder: (context, state) => const AlertsScreen(),
+      ),
       // Collection Module
       GoRoute(
         path: '/collection',
@@ -112,6 +119,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/collection/batches/update-stage',
         name: RouteNames.collectionBatchStageUpdate,
         builder: (context, state) => CollectionBatchStageUpdateScreen(batch: state.extra as BatchModel),
+      ),
+      GoRoute(
+        path: '/collection/alerts',
+        name: RouteNames.collectionAlerts,
+        builder: (context, state) => const AlertsScreen(),
+      ),
+      GoRoute(
+        path: '/batches/:id/qr',
+        name: 'batch_qr',
+        builder: (context, state) => BatchQrScreen(batchId: state.pathParameters['id']!),
       ),
       // Distributor Module
       GoRoute(

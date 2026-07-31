@@ -5,28 +5,31 @@ import '../../../../core/services/supabase_service.dart';
 import '../models/batch_model.dart';
 import '../../../../core/enums/batch_stage.dart';
 import '../../../../core/enums/batch_status.dart';
+import '../../../../core/utils/repository_helper.dart';
 
 final batchRepositoryProvider = Provider<BatchRepository>((ref) {
   return BatchRepository(ref.watch(supabaseServiceProvider).client);
 });
 
-class BatchRepository {
+class BatchRepository with RepositoryHelper {
   final SupabaseClient _client;
 
   BatchRepository(this._client);
 
   Future<List<BatchModel>> getBatches({String? collectionCentreId, BatchStatus? status}) async {
-    var query = _client.from(DatabaseTables.batches).select();
-    
-    if (collectionCentreId != null) {
-      query = query.eq('collection_centre_id', collectionCentreId);
-    }
-    if (status != null) {
-      query = query.eq('overall_status', status.value);
-    }
-    
-    final data = await query.order('created_at', ascending: false);
-    return (data as List).map((e) => BatchModel.fromJson(e)).toList();
+    return executeDb(() async {
+      var query = _client.from(DatabaseTables.batches).select('id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at');
+      
+      if (collectionCentreId != null) {
+        query = query.eq('collection_centre_id', collectionCentreId);
+      }
+      if (status != null) {
+        query = query.eq('overall_status', status.value);
+      }
+      
+      final data = await query.order('created_at', ascending: false);
+      return (data as List).map((e) => BatchModel.fromJson(e)).toList();
+    });
   }
 
   Future<List<BatchModel>> getBatchesPaginated({
@@ -37,33 +40,39 @@ class BatchRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
-    var query = _client.from(DatabaseTables.batches).select().eq('collection_centre_id', collectionCentreId);
-    
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      query = query.ilike('batch_code', '%$searchQuery%');
-    }
-    if (stageFilter != null) {
-      query = query.eq('current_stage', stageFilter.value);
-    }
-    if (statusFilter != null) {
-      query = query.eq('overall_status', statusFilter.value);
-    }
+    return executeDb(() async {
+      var query = _client.from(DatabaseTables.batches).select('id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at').eq('collection_centre_id', collectionCentreId);
+      
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        query = query.ilike('batch_code', '%$searchQuery%');
+      }
+      if (stageFilter != null) {
+        query = query.eq('current_stage', stageFilter.value);
+      }
+      if (statusFilter != null) {
+        query = query.eq('overall_status', statusFilter.value);
+      }
 
-    final from = (page - 1) * pageSize;
-    final to = from + pageSize - 1;
+      final from = (page - 1) * pageSize;
+      final to = from + pageSize - 1;
 
-    final data = await query.range(from, to).order('created_at', ascending: false);
-    return (data as List).map((e) => BatchModel.fromJson(e)).toList();
+      final data = await query.range(from, to).order('created_at', ascending: false);
+      return (data as List).map((e) => BatchModel.fromJson(e)).toList();
+    });
   }
 
   Future<BatchModel> getBatchById(String id) async {
-    final data = await _client.from(DatabaseTables.batches).select().eq('id', id).single();
-    return BatchModel.fromJson(data);
+    return executeDb(() async {
+      final data = await _client.from(DatabaseTables.batches).select('*, farms(*), collection_centres(*)').eq('id', id).single();
+      return BatchModel.fromJson(data);
+    });
   }
 
   Future<BatchModel> getBatchByPublicToken(String token) async {
-    final data = await _client.from(DatabaseTables.batches).select().eq('public_token', token).single();
-    return BatchModel.fromJson(data);
+    return executeDb(() async {
+      final data = await _client.from(DatabaseTables.batches).select('*, farms(*), collection_centres(*)').eq('public_token', token).single();
+      return BatchModel.fromJson(data);
+    });
   }
 
   Future<BatchModel> createBatchTransaction({
@@ -135,24 +144,26 @@ class BatchRepository {
     double? longitude,
     String? remarks,
   }) async {
-    final userId = _client.auth.currentUser!.id;
-    
-    // Update batch stage
-    await _client.from(DatabaseTables.batches).update({
-      'current_stage': newStage.value,
-    }).eq('id', batchId);
+    return executeDb(() async {
+      final userId = _client.auth.currentUser!.id;
+      
+      // Update batch stage
+      await _client.from(DatabaseTables.batches).update({
+        'current_stage': newStage.value,
+      }).eq('id', batchId);
 
-    // Record journey event
-    await _client.from(DatabaseTables.trackingEvents).insert({
-      'batch_id': batchId,
-      'stage': newStage.value,
-      'event_type': eventType,
-      'status': status,
-      'created_by': userId,
-      'location_name': locationName,
-      'latitude': latitude,
-      'longitude': longitude,
-      'remarks': remarks,
+      // Record journey event
+      await _client.from(DatabaseTables.trackingEvents).insert({
+        'batch_id': batchId,
+        'stage': newStage.value,
+        'event_type': eventType,
+        'status': status,
+        'created_by': userId,
+        'location_name': locationName,
+        'latitude': latitude,
+        'longitude': longitude,
+        'remarks': remarks,
+      });
     });
   }
 }

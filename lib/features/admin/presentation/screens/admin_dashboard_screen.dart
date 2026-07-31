@@ -5,12 +5,26 @@ import '../../../../app/router/route_names.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/admin_dashboard_provider.dart';
 import '../widgets/admin_dashboard_charts.dart';
+import '../../../../core/services/local_notification_service.dart';
 
-class AdminDashboardScreen extends ConsumerWidget {
+class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      LocalNotificationService().requestPermissions();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(authStateProvider).value;
 
@@ -43,9 +57,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              _buildKPISection(context, ref, theme),
+              _buildKPISection(context, theme),
               const SizedBox(height: 24),
-              _buildChartsSection(context, ref, theme),
+              _buildChartsSection(context, theme),
               const SizedBox(height: 24),
               Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
@@ -57,7 +71,7 @@ class AdminDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildKPISection(BuildContext context, WidgetRef ref, ThemeData theme) {
+  Widget _buildKPISection(BuildContext context, ThemeData theme) {
     final statsAsyncValue = ref.watch(adminDashboardStatsProvider);
     
     return statsAsyncValue.when(
@@ -127,7 +141,7 @@ class AdminDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildChartsSection(BuildContext context, WidgetRef ref, ThemeData theme) {
+  Widget _buildChartsSection(BuildContext context, ThemeData theme) {
     final statsAsync = ref.watch(adminDashboardStatsProvider);
     final volumeAsync = ref.watch(adminDailyVolumeProvider(7)); // last 7 days
 
@@ -208,7 +222,7 @@ class AdminDashboardScreen extends ConsumerWidget {
           title: 'System Alerts',
           icon: Icons.warning_amber_rounded,
           color: theme.colorScheme.error,
-          onTap: () {},
+          onTap: () => context.pushNamed(RouteNames.adminAlerts),
         ),
         _buildDashboardCard(
           context,

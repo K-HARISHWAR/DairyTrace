@@ -17,7 +17,7 @@ class DeliveryRepository {
   Future<List<DeliveryModel>> getDeliveriesForUser(String userId) async {
     final data = await _client
         .from(DatabaseTables.deliveries)
-        .select()
+        .select('*, batches(batch_code, quantity_litres, collection_centres(name), farms(farm_name))')
         .eq('assigned_to', userId)
         .order('assigned_at', ascending: false);
         

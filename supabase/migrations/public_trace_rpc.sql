@@ -27,6 +27,9 @@ AS $$
               'checkpoint', qc.checkpoint,
               'evaluated_result', qc.evaluated_result,
               'purity_passed', qc.purity_passed,
+              'fat_percentage', qc.fat_percentage,
+              'snf_percentage', qc.snf_percentage,
+              'temperature_celsius', qc.temperature_c,
               'checked_at', qc.checked_at
             ) ORDER BY qc.checked_at DESC
           ), '[]'::jsonb)
