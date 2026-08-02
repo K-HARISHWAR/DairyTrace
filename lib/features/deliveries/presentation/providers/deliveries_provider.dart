@@ -8,22 +8,60 @@ import '../../data/repositories/delivery_repository.dart';
 final deliveriesProvider = AsyncNotifierProvider<DeliveriesNotifier, List<DeliveryModel>>(DeliveriesNotifier.new);
 
 class DeliveriesNotifier extends AsyncNotifier<List<DeliveryModel>> {
+  int _page = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+  static const int _pageSize = 20;
+
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
+
   @override
   FutureOr<List<DeliveryModel>> build() async {
-    final user = ref.watch(authStateProvider).value;
-    if (user == null) return [];
-    return ref.watch(deliveryRepositoryProvider).getDeliveriesForUser(user.id);
+    _page = 1;
+    _hasMore = true;
+    return _fetchDeliveries(page: 1);
   }
 
-  Future<void> fetchDeliveries() async {
-    state = const AsyncLoading();
+  Future<List<DeliveryModel>> _fetchDeliveries({required int page}) async {
+    final user = ref.watch(authStateProvider).value;
+    if (user == null) return [];
+    
+    final results = await ref.watch(deliveryRepositoryProvider).getDeliveriesPaginated(
+      userId: user.id,
+      page: page,
+      pageSize: _pageSize,
+    );
+    
+    _hasMore = results.length == _pageSize;
+    return results;
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    
+    _isLoadingMore = true;
+    
     try {
-      final user = ref.read(authStateProvider).value;
-      if (user == null) {
-        state = const AsyncData([]);
-        return;
+      final nextDeliveries = await _fetchDeliveries(page: _page + 1);
+      if (nextDeliveries.isNotEmpty) {
+        _page++;
+        final currentData = state.value ?? [];
+        state = AsyncData([...currentData, ...nextDeliveries]);
       }
-      final deliveries = await ref.read(deliveryRepositoryProvider).getDeliveriesForUser(user.id);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _page = 1;
+    _hasMore = true;
+    try {
+      final deliveries = await _fetchDeliveries(page: 1);
       state = AsyncData(deliveries);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -50,7 +88,7 @@ class DeliveriesNotifier extends AsyncNotifier<List<DeliveryModel>> {
         notes: notes,
       );
       // Refresh the list
-      await fetchDeliveries();
+      await refresh();
     } catch (e) {
       rethrow;
     }

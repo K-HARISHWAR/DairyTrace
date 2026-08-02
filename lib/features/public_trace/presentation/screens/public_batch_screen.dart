@@ -5,9 +5,30 @@ import 'package:intl/intl.dart';
 import '../../../../app/router/route_names.dart';
 import '../../data/repositories/public_trace_repository.dart';
 
-final publicBatchProvider = FutureProvider.family<Map<String, dynamic>?, String>((ref, token) async {
-  return ref.watch(publicTraceRepositoryProvider).getPublicBatchTrace(token);
-});
+import 'dart:async';
+
+class PublicBatchNotifier extends AutoDisposeFamilyAsyncNotifier<Map<String, dynamic>?, String> {
+  @override
+  FutureOr<Map<String, dynamic>?> build(String arg) async {
+    return _fetchBatch(arg);
+  }
+
+  Future<Map<String, dynamic>?> _fetchBatch(String token) async {
+    return ref.watch(publicTraceRepositoryProvider).getPublicBatchTrace(token);
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    try {
+      final batch = await _fetchBatch(arg);
+      state = AsyncData(batch);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+}
+
+final publicBatchProvider = AutoDisposeAsyncNotifierProviderFamily<PublicBatchNotifier, Map<String, dynamic>?, String>(PublicBatchNotifier.new);
 
 class PublicBatchScreen extends ConsumerWidget {
   final String publicToken;

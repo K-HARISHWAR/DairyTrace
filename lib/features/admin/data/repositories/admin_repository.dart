@@ -18,6 +18,24 @@ class AdminRepository {
     return (data as List).map((e) => ProfileModel.fromJson(e)).toList();
   }
 
+  Future<List<ProfileModel>> getUsersPaginated({
+    String? searchQuery,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    var query = _client.from(DatabaseTables.profiles).select();
+    
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      query = query.or('full_name.ilike.%$searchQuery%,email.ilike.%$searchQuery%');
+    }
+    
+    final from = (page - 1) * pageSize;
+    final to = from + pageSize - 1;
+    
+    final data = await query.range(from, to).order('created_at', ascending: false);
+    return (data as List).map((e) => ProfileModel.fromJson(e)).toList();
+  }
+
   Future<ProfileModel> createUser({
     required String email,
     required String password,

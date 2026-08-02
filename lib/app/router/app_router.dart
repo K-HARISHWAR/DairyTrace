@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'route_names.dart';
+import 'app_routing_readiness_provider.dart';
+import '../../core/enums/user_role.dart';
 
 import '../../features/authentication/presentation/screens/splash_screen.dart';
 import '../../features/authentication/presentation/screens/welcome_screen.dart';
@@ -40,8 +42,64 @@ class PlaceholderScreen extends StatelessWidget {
 }
 
 final goRouterProvider = Provider<GoRouter>((ref) {
+  final readinessNotifier = ref.watch(appRoutingReadinessProvider);
+
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: readinessNotifier,
+    redirect: (context, state) {
+      final routingState = readinessNotifier.state;
+      final path = state.uri.path;
+
+      // Allow public routes
+      if (path == '/scan' || path.startsWith('/public_batch/')) {
+        return null;
+      }
+
+      if (routingState.isLoading) {
+        return '/'; // Splash screen
+      }
+
+      if (!routingState.isAuthenticated) {
+        if (path == '/login') return null;
+        return '/welcome';
+      }
+
+      if (!routingState.hasProfile) {
+        return '/profile-not-configured';
+      }
+
+      if (!routingState.isActive) {
+        return '/inactive-account';
+      }
+
+      // Root path routing for authenticated & active users
+      if (path == '/' || path == '/welcome' || path == '/login') {
+        switch (routingState.role) {
+          case UserRole.admin:
+            return '/admin';
+          case UserRole.collectionStaff:
+            return '/collection';
+          case UserRole.distributor:
+            return '/distributor';
+          default:
+            return '/access-denied';
+        }
+      }
+
+      // Route guard per role
+      if (path.startsWith('/admin') && routingState.role != UserRole.admin) {
+        return '/access-denied';
+      }
+      if (path.startsWith('/collection') && routingState.role != UserRole.collectionStaff) {
+        return '/access-denied';
+      }
+      if (path.startsWith('/distributor') && routingState.role != UserRole.distributor) {
+        return '/access-denied';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/',
@@ -59,9 +117,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: '/inactive_account',
+        path: '/inactive-account',
         name: RouteNames.inactiveAccount,
         builder: (context, state) => const PlaceholderScreen(title: 'Account Inactive'),
+      ),
+      GoRoute(
+        path: '/profile-not-configured',
+        name: 'profile_not_configured',
+        builder: (context, state) => const PlaceholderScreen(title: 'Profile Not Configured'),
+      ),
+      GoRoute(
+        path: '/access-denied',
+        name: 'access_denied',
+        builder: (context, state) => const PlaceholderScreen(title: 'Access Denied'),
       ),
       // Admin Module
       GoRoute(

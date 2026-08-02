@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../batches/data/models/batch_model.dart';
@@ -9,14 +10,24 @@ class BatchFilterArgs {
   final String searchQuery;
   final BatchStage? stageFilter;
   final BatchStatus? statusFilter;
-  final int page;
 
   const BatchFilterArgs({
     this.searchQuery = '',
     this.stageFilter,
     this.statusFilter,
-    this.page = 1,
   });
+
+  BatchFilterArgs copyWith({
+    String? searchQuery,
+    BatchStage? stageFilter,
+    BatchStatus? statusFilter,
+  }) {
+    return BatchFilterArgs(
+      searchQuery: searchQuery ?? this.searchQuery,
+      stageFilter: stageFilter ?? this.stageFilter,
+      statusFilter: statusFilter ?? this.statusFilter,
+    );
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -25,24 +36,100 @@ class BatchFilterArgs {
           runtimeType == other.runtimeType &&
           searchQuery == other.searchQuery &&
           stageFilter == other.stageFilter &&
-          statusFilter == other.statusFilter &&
-          page == other.page;
+          statusFilter == other.statusFilter;
 
   @override
-  int get hashCode => searchQuery.hashCode ^ (stageFilter?.hashCode ?? 0) ^ (statusFilter?.hashCode ?? 0) ^ page.hashCode;
+  int get hashCode => searchQuery.hashCode ^ (stageFilter?.hashCode ?? 0) ^ (statusFilter?.hashCode ?? 0);
 }
 
-final paginatedBatchesProvider = FutureProvider.family.autoDispose<List<BatchModel>, BatchFilterArgs>((ref, args) async {
-  final user = ref.watch(authStateProvider).value;
-  if (user == null || user.collectionCentreId == null) return [];
+// Notifier for preserving filters
+class BatchFilterNotifier extends Notifier<BatchFilterArgs> {
+  @override
+  BatchFilterArgs build() => const BatchFilterArgs();
 
-  final repository = ref.watch(batchRepositoryProvider);
-  return await repository.getBatchesPaginated(
-    collectionCentreId: user.collectionCentreId!,
-    searchQuery: args.searchQuery,
-    stageFilter: args.stageFilter,
-    statusFilter: args.statusFilter,
-    page: args.page,
-    pageSize: 50, // Simplified pagination for now
-  );
-});
+  void updateSearchQuery(String query) {
+    state = state.copyWith(searchQuery: query);
+  }
+
+  void updateStageFilter(BatchStage? stage) {
+    state = state.copyWith(stageFilter: stage);
+  }
+
+  void updateStatusFilter(BatchStatus? status) {
+    state = state.copyWith(statusFilter: status);
+  }
+}
+
+final batchFilterProvider = NotifierProvider<BatchFilterNotifier, BatchFilterArgs>(BatchFilterNotifier.new);
+
+// AsyncNotifier for fetching data based on filters
+class PaginatedBatchesNotifier extends AutoDisposeAsyncNotifier<List<BatchModel>> {
+  int _page = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+  static const int _pageSize = 20;
+
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
+
+  @override
+  Future<List<BatchModel>> build() async {
+    _page = 1;
+    _hasMore = true;
+    return _fetchBatches(page: 1);
+  }
+
+  Future<List<BatchModel>> _fetchBatches({required int page}) async {
+    final args = ref.watch(batchFilterProvider);
+    final user = ref.watch(authStateProvider).value;
+    
+    if (user == null || user.collectionCentreId == null) return [];
+
+    final repository = ref.watch(batchRepositoryProvider);
+    final results = await repository.getBatchesPaginated(
+      collectionCentreId: user.collectionCentreId!,
+      searchQuery: args.searchQuery,
+      stageFilter: args.stageFilter,
+      statusFilter: args.statusFilter,
+      page: page,
+      pageSize: _pageSize,
+    );
+    
+    _hasMore = results.length == _pageSize;
+    return results;
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    
+    _isLoadingMore = true;
+    
+    try {
+      final nextBatches = await _fetchBatches(page: _page + 1);
+      if (nextBatches.isNotEmpty) {
+        _page++;
+        final currentData = state.value ?? [];
+        state = AsyncData([...currentData, ...nextBatches]);
+      }
+    } catch (e, st) {
+      // Don't overwrite the state with an error if we already have data, just log or handle
+      state = AsyncError(e, st);
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _page = 1;
+    _hasMore = true;
+    try {
+      final batches = await _fetchBatches(page: 1);
+      state = AsyncData(batches);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+}
+
+final paginatedBatchesProvider = AutoDisposeAsyncNotifierProvider<PaginatedBatchesNotifier, List<BatchModel>>(PaginatedBatchesNotifier.new);

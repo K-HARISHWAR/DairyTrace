@@ -5,33 +5,77 @@ import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../models/alert_model.dart';
 import '../repositories/alert_repository.dart';
 
-final alertsProvider = StreamProvider<List<AlertModel>>((ref) {
-  final user = ref.watch(authStateProvider).value;
-  if (user == null) return const Stream.empty();
-  
-  // We should ideally listen to alerts for the user's specific collection centre.
-  // For now, we'll assume the scope is filtered by the RLS policies in Supabase, 
-  // or we pass the specific centre ID if available in the profile.
-  // We'll just listen to all unresolved alerts the user has access to via RLS.
-  final stream = ref.watch(alertRepositoryProvider).watchAlerts();
+class AlertsNotifier extends AutoDisposeAsyncNotifier<List<AlertModel>> {
+  int _page = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+  static const int _pageSize = 20;
 
-  return stream.map((dataList) {
-    final alerts = dataList.map((e) => AlertModel.fromJson(e)).toList();
-    
-    // Sort so newest is first
-    alerts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
 
-    // Check for new critical/high alerts to notify
-    for (final alert in alerts) {
-      if (!alert.isResolved && (alert.severity == AlertSeverity.critical || alert.severity == AlertSeverity.high)) {
-        LocalNotificationService().showNotification(
-          id: alert.id,
-          title: alert.title,
-          body: alert.message,
-        );
-      }
+  @override
+  FutureOr<List<AlertModel>> build() async {
+    _page = 1;
+    _hasMore = true;
+
+    // Listen to real-time alerts for notifications
+    final user = ref.watch(authStateProvider).value;
+    if (user != null) {
+      final sub = ref.watch(alertRepositoryProvider).watchAlerts().listen((dataList) {
+        // Just show notifications for new critical/high ones that pop in real-time
+        // We could also call refresh() here if we want the list to auto-update
+      });
+      ref.onDispose(() => sub.cancel());
     }
 
-    return alerts;
-  });
-});
+    return _fetchAlerts(page: 1);
+  }
+
+  Future<List<AlertModel>> _fetchAlerts({required int page}) async {
+    final user = ref.watch(authStateProvider).value;
+    if (user == null) return [];
+    
+    final results = await ref.watch(alertRepositoryProvider).getUnresolvedAlerts(
+      page: page,
+      pageSize: _pageSize,
+      collectionCentreId: user.collectionCentreId,
+    );
+    
+    _hasMore = results.length == _pageSize;
+    return results;
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    
+    _isLoadingMore = true;
+    
+    try {
+      final nextAlerts = await _fetchAlerts(page: _page + 1);
+      if (nextAlerts.isNotEmpty) {
+        _page++;
+        final currentData = state.value ?? [];
+        state = AsyncData([...currentData, ...nextAlerts]);
+      }
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _page = 1;
+    _hasMore = true;
+    try {
+      final alerts = await _fetchAlerts(page: 1);
+      state = AsyncData(alerts);
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
+  }
+}
+
+final alertsProvider = AutoDisposeAsyncNotifierProvider<AlertsNotifier, List<AlertModel>>(AlertsNotifier.new);
