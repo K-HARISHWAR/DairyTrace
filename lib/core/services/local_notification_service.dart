@@ -3,32 +3,37 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class LocalNotificationService {
-  static final LocalNotificationService _instance = LocalNotificationService._internal();
+  static final LocalNotificationService _instance =
+      LocalNotificationService._internal();
   factory LocalNotificationService() => _instance;
   LocalNotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   // Track recently shown notifications by deduplication_key or ID to avoid duplicates
   final Set<String> _recentlyShown = {};
 
   Future<void> initialize() async {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    
-    // Request permission lazily later, so set request functions to false here
-    const DarwinInitializationSettings initializationSettingsDarwin = DarwinInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
-    );
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
+    // Request permission lazily later, so set request functions to false here
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        );
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
 
     await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
   }
@@ -36,7 +41,7 @@ class LocalNotificationService {
   void _onNotificationTapped(NotificationResponse response) {
     // Navigate to alerts screen based on payload
     // You would typically use a navigation key or router setup here.
-    // For now, this is a placeholder. 
+    // For now, this is a placeholder.
     print('Notification tapped: ${response.payload}');
   }
 
@@ -63,14 +68,15 @@ class LocalNotificationService {
       _recentlyShown.add(id);
     }
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'dairytrace_alerts',
-      'DairyTrace Alerts',
-      channelDescription: 'High priority alerts for DairyTrace operations',
-      importance: Importance.max,
-      priority: Priority.high,
-      showWhen: true,
-    );
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+          'dairytrace_alerts',
+          'DairyTrace Alerts',
+          channelDescription: 'High priority alerts for DairyTrace operations',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
 
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
@@ -80,10 +86,10 @@ class LocalNotificationService {
     final notifId = Random().nextInt(1000000);
 
     await _flutterLocalNotificationsPlugin.show(
-      notifId,
-      title,
-      body,
-      platformChannelSpecifics,
+      id: notifId,
+      title: title,
+      body: body,
+      notificationDetails: platformChannelSpecifics,
       payload: payload ?? id,
     );
   }

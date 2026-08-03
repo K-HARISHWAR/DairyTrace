@@ -65,7 +65,12 @@ class Validators {
     return null;
   }
 
-  static String? numericBounds(String? value, {double? min, double? max, String? fieldName}) {
+  static String? numericBounds(
+    String? value, {
+    double? min,
+    double? max,
+    String? fieldName,
+  }) {
     if (value == null || value.trim().isEmpty) {
       return '${fieldName ?? 'This field'} is required';
     }
@@ -98,8 +103,9 @@ class Validators {
       return 'Token is required';
     }
     final regex = RegExp(
-        r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
-        caseSensitive: false);
+      r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+      caseSensitive: false,
+    );
     if (!regex.hasMatch(value.trim())) {
       return 'Invalid token format';
     }

@@ -42,12 +42,23 @@ class ProfileModel extends Equatable {
       'full_name': fullName,
       'phone': phone,
       'role': role.value,
-      if (collectionCentreId != null) 'collection_centre_id': collectionCentreId,
-      if (distributorOrganisationId != null) 'distributor_organisation_id': distributorOrganisationId,
+      if (collectionCentreId != null)
+        'collection_centre_id': collectionCentreId,
+      if (distributorOrganisationId != null)
+        'distributor_organisation_id': distributorOrganisationId,
       'is_active': isActive,
     };
   }
 
   @override
-  List<Object?> get props => [id, email, fullName, phone, role, collectionCentreId, distributorOrganisationId, isActive];
+  List<Object?> get props => [
+    id,
+    email,
+    fullName,
+    phone,
+    role,
+    collectionCentreId,
+    distributorOrganisationId,
+    isActive,
+  ];
 }

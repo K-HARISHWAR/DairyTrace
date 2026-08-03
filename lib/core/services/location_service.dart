@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
+
 
 class LocationServiceException implements Exception {
   final String message;
@@ -17,7 +17,9 @@ class LocationService {
   static Future<void> checkAndRequestPermission() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      throw LocationServiceException('Location services are disabled. Please enable them in settings to improve accuracy.');
+      throw LocationServiceException(
+        'Location services are disabled. Please enable them in settings to improve accuracy.',
+      );
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
@@ -26,7 +28,9 @@ class LocationService {
       // Here we directly request.
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        throw LocationServiceException('Location permission was denied. Cannot fetch GPS coordinates.');
+        throw LocationServiceException(
+          'Location permission was denied. Cannot fetch GPS coordinates.',
+        );
       }
     }
 
@@ -38,7 +42,7 @@ class LocationService {
     }
   }
 
-  /// Gets the current location if available. 
+  /// Gets the current location if available.
   /// Does not block essential operations; returns null if unavailable.
   static Future<Position?> getCurrentPosition() async {
     try {

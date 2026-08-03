@@ -91,10 +91,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (path.startsWith('/admin') && routingState.role != UserRole.admin) {
         return '/access-denied';
       }
-      if (path.startsWith('/collection') && routingState.role != UserRole.collectionStaff) {
+      if (path.startsWith('/collection') &&
+          routingState.role != UserRole.collectionStaff) {
         return '/access-denied';
       }
-      if (path.startsWith('/distributor') && routingState.role != UserRole.distributor) {
+      if (path.startsWith('/distributor') &&
+          routingState.role != UserRole.distributor) {
         return '/access-denied';
       }
 
@@ -119,17 +121,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/inactive-account',
         name: RouteNames.inactiveAccount,
-        builder: (context, state) => const PlaceholderScreen(title: 'Account Inactive'),
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Account Inactive'),
       ),
       GoRoute(
         path: '/profile-not-configured',
         name: 'profile_not_configured',
-        builder: (context, state) => const PlaceholderScreen(title: 'Profile Not Configured'),
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Profile Not Configured'),
       ),
       GoRoute(
         path: '/access-denied',
         name: 'access_denied',
-        builder: (context, state) => const PlaceholderScreen(title: 'Access Denied'),
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Access Denied'),
       ),
       // Admin Module
       GoRoute(
@@ -181,12 +186,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/collection/batches/details',
         name: RouteNames.collectionBatchDetails,
-        builder: (context, state) => CollectionBatchDetailsScreen(batch: state.extra as BatchModel),
+        builder: (context, state) =>
+            CollectionBatchDetailsScreen(batch: state.extra as BatchModel),
       ),
       GoRoute(
         path: '/collection/batches/update-stage',
         name: RouteNames.collectionBatchStageUpdate,
-        builder: (context, state) => CollectionBatchStageUpdateScreen(batch: state.extra as BatchModel),
+        builder: (context, state) =>
+            CollectionBatchStageUpdateScreen(batch: state.extra as BatchModel),
       ),
       GoRoute(
         path: '/collection/alerts',
@@ -196,7 +203,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/batches/:id/qr',
         name: 'batch_qr',
-        builder: (context, state) => BatchQrScreen(batchId: state.pathParameters['id']!),
+        builder: (context, state) =>
+            BatchQrScreen(batchId: state.pathParameters['id']!),
       ),
       // Distributor Module
       GoRoute(
@@ -213,7 +221,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/public_batch/:token',
         name: RouteNames.publicBatch,
-        builder: (context, state) => PublicBatchScreen(publicToken: state.pathParameters['token']!),
+        builder: (context, state) =>
+            PublicBatchScreen(publicToken: state.pathParameters['token']!),
       ),
     ],
   );

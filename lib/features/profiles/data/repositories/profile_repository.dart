@@ -17,7 +17,9 @@ class ProfileRepository with RepositoryHelper {
     return executeDb(() async {
       final data = await _client
           .from(DatabaseTables.profiles)
-          .select('id, full_name, email, role, collection_centre_id, distributor_organisation_id')
+          .select(
+            'id, full_name, email, role, collection_centre_id, distributor_organisation_id',
+          )
           .eq('id', userId)
           .single();
       return data;

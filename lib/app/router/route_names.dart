@@ -29,13 +29,15 @@ class RouteNames {
   static const String collectionBatchDetails = 'collection_batch_details';
   static const String collectionBatchQuality = 'collection_batch_quality';
   static const String collectionBatchQr = 'collection_batch_qr';
-  static const String collectionBatchStageUpdate = 'collection_batch_stage_update';
+  static const String collectionBatchStageUpdate =
+      'collection_batch_stage_update';
   static const String collectionAlerts = 'collection_alerts';
 
   // Distributor
   static const String distributorDashboard = 'distributor_dashboard';
   static const String distributorDeliveries = 'distributor_deliveries';
-  static const String distributorDeliveryDetails = 'distributor_delivery_details';
+  static const String distributorDeliveryDetails =
+      'distributor_delivery_details';
   static const String distributorHistory = 'distributor_history';
 
   // Public

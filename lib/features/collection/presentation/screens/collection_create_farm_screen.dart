@@ -10,10 +10,12 @@ class CollectionCreateFarmScreen extends ConsumerStatefulWidget {
   const CollectionCreateFarmScreen({super.key});
 
   @override
-  ConsumerState<CollectionCreateFarmScreen> createState() => _CollectionCreateFarmScreenState();
+  ConsumerState<CollectionCreateFarmScreen> createState() =>
+      _CollectionCreateFarmScreenState();
 }
 
-class _CollectionCreateFarmScreenState extends ConsumerState<CollectionCreateFarmScreen> {
+class _CollectionCreateFarmScreenState
+    extends ConsumerState<CollectionCreateFarmScreen> {
   final _formKey = GlobalKey<FormState>();
   final _farmNameController = TextEditingController();
   final _ownerNameController = TextEditingController();
@@ -22,7 +24,7 @@ class _CollectionCreateFarmScreenState extends ConsumerState<CollectionCreateFar
   final _districtController = TextEditingController();
   final _stateController = TextEditingController();
   final _addressController = TextEditingController();
-  
+
   bool _isLoading = false;
 
   @override
@@ -47,35 +49,47 @@ class _CollectionCreateFarmScreenState extends ConsumerState<CollectionCreateFar
 
     final user = ref.read(authStateProvider).value;
     if (user?.collectionCentreId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error: No collection centre assigned to your profile.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Error: No collection centre assigned to your profile.',
+          ),
+        ),
+      );
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(farmRepositoryProvider).registerFarm(
-        farmCode: _generateFarmCode(),
-        farmName: _farmNameController.text.trim(),
-        ownerName: _ownerNameController.text.trim(),
-        phone: _phoneController.text.trim(),
-        village: _villageController.text.trim(),
-        district: _districtController.text.trim(),
-        state: _stateController.text.trim(),
-        address: _addressController.text.trim(),
-        collectionCentreId: user!.collectionCentreId!,
-      );
+      await ref
+          .read(farmRepositoryProvider)
+          .registerFarm(
+            farmCode: _generateFarmCode(),
+            farmName: _farmNameController.text.trim(),
+            ownerName: _ownerNameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            village: _villageController.text.trim(),
+            district: _districtController.text.trim(),
+            state: _stateController.text.trim(),
+            address: _addressController.text.trim(),
+            collectionCentreId: user!.collectionCentreId!,
+          );
 
       // Invalidate to refresh the list
       ref.invalidate(paginatedFarmsProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Farm registered successfully!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Farm registered successfully!')),
+        );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error registering farm: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error registering farm: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -107,7 +121,9 @@ class _CollectionCreateFarmScreenState extends ConsumerState<CollectionCreateFar
               const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Phone Number (Optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Phone Number (Optional)',
+                ),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 16),
@@ -143,7 +159,9 @@ class _CollectionCreateFarmScreenState extends ConsumerState<CollectionCreateFar
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
-                child: _isLoading ? const CircularProgressIndicator() : const Text('Register Farm'),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Register Farm'),
               ),
             ],
           ),

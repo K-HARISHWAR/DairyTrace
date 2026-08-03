@@ -5,7 +5,10 @@ import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../data/models/delivery_model.dart';
 import '../../data/repositories/delivery_repository.dart';
 
-final deliveriesProvider = AsyncNotifierProvider<DeliveriesNotifier, List<DeliveryModel>>(DeliveriesNotifier.new);
+final deliveriesProvider =
+    AsyncNotifierProvider<DeliveriesNotifier, List<DeliveryModel>>(
+      DeliveriesNotifier.new,
+    );
 
 class DeliveriesNotifier extends AsyncNotifier<List<DeliveryModel>> {
   int _page = 1;
@@ -17,7 +20,7 @@ class DeliveriesNotifier extends AsyncNotifier<List<DeliveryModel>> {
   bool get isLoadingMore => _isLoadingMore;
 
   @override
-  FutureOr<List<DeliveryModel>> build() async {
+  Future<List<DeliveryModel>> build() async {
     _page = 1;
     _hasMore = true;
     return _fetchDeliveries(page: 1);
@@ -26,22 +29,24 @@ class DeliveriesNotifier extends AsyncNotifier<List<DeliveryModel>> {
   Future<List<DeliveryModel>> _fetchDeliveries({required int page}) async {
     final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
-    
-    final results = await ref.watch(deliveryRepositoryProvider).getDeliveriesPaginated(
-      userId: user.id,
-      page: page,
-      pageSize: _pageSize,
-    );
-    
+
+    final results = await ref
+        .watch(deliveryRepositoryProvider)
+        .getDeliveriesPaginated(
+          userId: user.id,
+          page: page,
+          pageSize: _pageSize,
+        );
+
     _hasMore = results.length == _pageSize;
     return results;
   }
 
   Future<void> loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     _isLoadingMore = true;
-    
+
     try {
       final nextDeliveries = await _fetchDeliveries(page: _page + 1);
       if (nextDeliveries.isNotEmpty) {
@@ -78,15 +83,17 @@ class DeliveriesNotifier extends AsyncNotifier<List<DeliveryModel>> {
     String? notes,
   }) async {
     try {
-      await ref.read(deliveryRepositoryProvider).updateDeliveryStatus(
-        deliveryId: deliveryId,
-        status: status,
-        delayReason: delayReason,
-        locationName: locationName,
-        latitude: latitude,
-        longitude: longitude,
-        notes: notes,
-      );
+      await ref
+          .read(deliveryRepositoryProvider)
+          .updateDeliveryStatus(
+            deliveryId: deliveryId,
+            status: status,
+            delayReason: delayReason,
+            locationName: locationName,
+            latitude: latitude,
+            longitude: longitude,
+            notes: notes,
+          );
       // Refresh the list
       await refresh();
     } catch (e) {

@@ -10,10 +10,12 @@ class CollectionDashboardScreen extends ConsumerStatefulWidget {
   const CollectionDashboardScreen({super.key});
 
   @override
-  ConsumerState<CollectionDashboardScreen> createState() => _CollectionDashboardScreenState();
+  ConsumerState<CollectionDashboardScreen> createState() =>
+      _CollectionDashboardScreenState();
 }
 
-class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardScreen> {
+class _CollectionDashboardScreenState
+    extends ConsumerState<CollectionDashboardScreen> {
   @override
   void initState() {
     super.initState();
@@ -58,7 +60,12 @@ class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardS
               const SizedBox(height: 24),
               _buildKPISection(context, theme),
               const SizedBox(height: 24),
-              Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Quick Actions',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 12),
               GridView.count(
                 crossAxisCount: 2,
@@ -79,14 +86,16 @@ class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardS
                     title: 'Receive Batch',
                     icon: Icons.add_circle_outline,
                     color: theme.colorScheme.primary,
-                    onTap: () => context.pushNamed(RouteNames.collectionCreateBatch),
+                    onTap: () =>
+                        context.pushNamed(RouteNames.collectionCreateBatch),
                   ),
                   _buildDashboardCard(
                     context,
                     title: 'My Batches',
                     icon: Icons.local_drink_outlined,
                     color: theme.colorScheme.secondary,
-                    onTap: () => context.pushNamed(RouteNames.collectionBatches),
+                    onTap: () =>
+                        context.pushNamed(RouteNames.collectionBatches),
                   ),
                   _buildDashboardCard(
                     context,
@@ -111,14 +120,15 @@ class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardS
     );
   }
 
-  Widget _buildDashboardCard(BuildContext context, {
+  Widget _buildDashboardCard(
+    BuildContext context, {
     required String title,
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
-    
+
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,
@@ -155,7 +165,7 @@ class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardS
 
   Widget _buildKPISection(BuildContext context, ThemeData theme) {
     final statsAsync = ref.watch(collectionDashboardStatsProvider);
-    
+
     return statsAsync.when(
       data: (stats) {
         return GridView.count(
@@ -166,21 +176,67 @@ class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardS
           childAspectRatio: 1.5,
           physics: const NeverScrollableScrollPhysics(),
           children: [
-            _buildKPICard(theme, 'Today\'s Litres', '${stats['todayTotalLitres'] ?? 0} L', Icons.water_drop, color: Colors.blue),
-            _buildKPICard(theme, 'Today\'s Batches', '${stats['todayBatchCount'] ?? 0}', Icons.list_alt),
-            _buildKPICard(theme, 'Accepted', '${stats['acceptedCount'] ?? 0}', Icons.check_circle, color: Colors.green),
-            _buildKPICard(theme, 'Rejected', '${stats['rejectedCount'] ?? 0}', Icons.cancel, color: Colors.red),
-            _buildKPICard(theme, 'Pending Quality', '${stats['pendingQualityCount'] ?? 0}', Icons.science, color: Colors.orange),
-            _buildKPICard(theme, 'Unresolved Alerts', '${stats['unresolvedAlerts'] ?? 0}', Icons.warning_amber, color: Colors.redAccent),
+            _buildKPICard(
+              theme,
+              'Today\'s Litres',
+              '${stats['todayTotalLitres'] ?? 0} L',
+              Icons.water_drop,
+              color: Colors.blue,
+            ),
+            _buildKPICard(
+              theme,
+              'Today\'s Batches',
+              '${stats['todayBatchCount'] ?? 0}',
+              Icons.list_alt,
+            ),
+            _buildKPICard(
+              theme,
+              'Accepted',
+              '${stats['acceptedCount'] ?? 0}',
+              Icons.check_circle,
+              color: Colors.green,
+            ),
+            _buildKPICard(
+              theme,
+              'Rejected',
+              '${stats['rejectedCount'] ?? 0}',
+              Icons.cancel,
+              color: Colors.red,
+            ),
+            _buildKPICard(
+              theme,
+              'Pending Quality',
+              '${stats['pendingQualityCount'] ?? 0}',
+              Icons.science,
+              color: Colors.orange,
+            ),
+            _buildKPICard(
+              theme,
+              'Unresolved Alerts',
+              '${stats['unresolvedAlerts'] ?? 0}',
+              Icons.warning_amber,
+              color: Colors.redAccent,
+            ),
           ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error loading stats: $e', style: TextStyle(color: theme.colorScheme.error))),
+      error: (e, _) => Center(
+        child: Text(
+          'Error loading stats: $e',
+          style: TextStyle(color: theme.colorScheme.error),
+        ),
+      ),
     );
   }
 
-  Widget _buildKPICard(ThemeData theme, String title, String value, IconData icon, {Color? color}) {
+  Widget _buildKPICard(
+    ThemeData theme,
+    String title,
+    String value,
+    IconData icon, {
+    Color? color,
+  }) {
     final iconColor = color ?? theme.colorScheme.primary;
     return Card(
       elevation: 0,
@@ -201,7 +257,9 @@ class _CollectionDashboardScreenState extends ConsumerState<CollectionDashboardS
                 Expanded(
                   child: Text(
                     title,
-                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

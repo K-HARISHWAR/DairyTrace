@@ -53,7 +53,9 @@ class AlertModel extends Equatable {
 
     DateTime parsedDate;
     try {
-      parsedDate = json['created_at'] != null ? DateTime.parse(json['created_at'].toString()).toLocal() : DateTime.now();
+      parsedDate = json['created_at'] != null
+          ? DateTime.parse(json['created_at'].toString()).toLocal()
+          : DateTime.now();
     } catch (_) {
       parsedDate = DateTime.now();
     }
@@ -74,15 +76,15 @@ class AlertModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        message,
-        severity,
-        alertType,
-        batchId,
-        deliveryId,
-        collectionCentreId,
-        isResolved,
-        createdAt,
-      ];
+    id,
+    title,
+    message,
+    severity,
+    alertType,
+    batchId,
+    deliveryId,
+    collectionCentreId,
+    isResolved,
+    createdAt,
+  ];
 }

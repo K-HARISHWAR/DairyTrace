@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/services/local_notification_service.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
-import '../models/alert_model.dart';
-import '../repositories/alert_repository.dart';
+import '../../data/models/alert_model.dart';
+import '../../data/repositories/alert_repository.dart';
 
-class AlertsNotifier extends AutoDisposeAsyncNotifier<List<AlertModel>> {
+class AlertsNotifier extends AsyncNotifier<List<AlertModel>> {
   int _page = 1;
   bool _hasMore = true;
   bool _isLoadingMore = false;
@@ -15,14 +14,16 @@ class AlertsNotifier extends AutoDisposeAsyncNotifier<List<AlertModel>> {
   bool get isLoadingMore => _isLoadingMore;
 
   @override
-  FutureOr<List<AlertModel>> build() async {
+  Future<List<AlertModel>> build() async {
     _page = 1;
     _hasMore = true;
 
     // Listen to real-time alerts for notifications
     final user = ref.watch(authStateProvider).value;
     if (user != null) {
-      final sub = ref.watch(alertRepositoryProvider).watchAlerts().listen((dataList) {
+      final sub = ref.watch(alertRepositoryProvider).watchAlerts().listen((
+        dataList,
+      ) {
         // Just show notifications for new critical/high ones that pop in real-time
         // We could also call refresh() here if we want the list to auto-update
       });
@@ -35,22 +36,24 @@ class AlertsNotifier extends AutoDisposeAsyncNotifier<List<AlertModel>> {
   Future<List<AlertModel>> _fetchAlerts({required int page}) async {
     final user = ref.watch(authStateProvider).value;
     if (user == null) return [];
-    
-    final results = await ref.watch(alertRepositoryProvider).getUnresolvedAlerts(
-      page: page,
-      pageSize: _pageSize,
-      collectionCentreId: user.collectionCentreId,
-    );
-    
+
+    final results = await ref
+        .watch(alertRepositoryProvider)
+        .getUnresolvedAlerts(
+          page: page,
+          pageSize: _pageSize,
+          collectionCentreId: user.collectionCentreId,
+        );
+
     _hasMore = results.length == _pageSize;
     return results;
   }
 
   Future<void> loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     _isLoadingMore = true;
-    
+
     try {
       final nextAlerts = await _fetchAlerts(page: _page + 1);
       if (nextAlerts.isNotEmpty) {
@@ -78,4 +81,7 @@ class AlertsNotifier extends AutoDisposeAsyncNotifier<List<AlertModel>> {
   }
 }
 
-final alertsProvider = AutoDisposeAsyncNotifierProvider<AlertsNotifier, List<AlertModel>>(AlertsNotifier.new);
+final alertsProvider =
+    AsyncNotifierProvider.autoDispose<AlertsNotifier, List<AlertModel>>(
+      AlertsNotifier.new,
+    );

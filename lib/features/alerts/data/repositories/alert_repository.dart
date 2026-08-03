@@ -30,7 +30,9 @@ class AlertRepository {
     try {
       var query = _client
           .from(DatabaseTables.alerts)
-          .select('id, title, message, severity, alert_type, batch_id, delivery_id, collection_centre_id, is_resolved, created_at')
+          .select(
+            'id, title, message, severity, alert_type, batch_id, delivery_id, collection_centre_id, is_resolved, created_at',
+          )
           .eq('is_resolved', false);
 
       if (collectionCentreId != null) {
@@ -76,10 +78,6 @@ class AlertRepository {
 
   /// Returns a stream of real-time alert inserts for the user's scope.
   Stream<List<Map<String, dynamic>>> watchAlerts({String? collectionCentreId}) {
-    var filter = 'is_resolved=eq.false';
-    if (collectionCentreId != null) {
-      filter += '&collection_centre_id=eq.$collectionCentreId';
-    }
 
     return _client
         .from(DatabaseTables.alerts)

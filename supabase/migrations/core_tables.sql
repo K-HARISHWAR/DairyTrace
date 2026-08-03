@@ -204,3 +204,14 @@ CREATE TABLE app_notifications (
     is_read BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- 9.12 Batch Documents
+CREATE TABLE batch_documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    batch_id UUID NOT NULL REFERENCES batches(id) ON DELETE CASCADE,
+    document_type TEXT NOT NULL CHECK (document_type IN ('quality_certificate', 'delivery_proof', 'other')),
+    file_path TEXT NOT NULL,
+    uploaded_by UUID NOT NULL REFERENCES profiles(id),
+    uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_batch_documents_batch ON batch_documents(batch_id);

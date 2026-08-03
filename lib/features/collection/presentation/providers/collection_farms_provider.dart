@@ -8,15 +8,9 @@ class FarmFilterArgs {
   final String searchQuery;
   final bool? isActive;
 
-  const FarmFilterArgs({
-    this.searchQuery = '',
-    this.isActive,
-  });
+  const FarmFilterArgs({this.searchQuery = '', this.isActive});
 
-  FarmFilterArgs copyWith({
-    String? searchQuery,
-    bool? isActive,
-  }) {
+  FarmFilterArgs copyWith({String? searchQuery, bool? isActive}) {
     return FarmFilterArgs(
       searchQuery: searchQuery ?? this.searchQuery,
       isActive: isActive ?? this.isActive,
@@ -49,10 +43,12 @@ class FarmFilterNotifier extends Notifier<FarmFilterArgs> {
   }
 }
 
-final farmFilterProvider = NotifierProvider<FarmFilterNotifier, FarmFilterArgs>(FarmFilterNotifier.new);
+final farmFilterProvider = NotifierProvider<FarmFilterNotifier, FarmFilterArgs>(
+  FarmFilterNotifier.new,
+);
 
 // AsyncNotifier for fetching data based on filters
-class PaginatedFarmsNotifier extends AutoDisposeAsyncNotifier<List<FarmModel>> {
+class PaginatedFarmsNotifier extends AsyncNotifier<List<FarmModel>> {
   int _page = 1;
   bool _hasMore = true;
   bool _isLoadingMore = false;
@@ -62,7 +58,7 @@ class PaginatedFarmsNotifier extends AutoDisposeAsyncNotifier<List<FarmModel>> {
   bool get isLoadingMore => _isLoadingMore;
 
   @override
-  FutureOr<List<FarmModel>> build() async {
+  Future<List<FarmModel>> build() async {
     _page = 1;
     _hasMore = true;
     return _fetchFarms(page: 1);
@@ -71,7 +67,7 @@ class PaginatedFarmsNotifier extends AutoDisposeAsyncNotifier<List<FarmModel>> {
   Future<List<FarmModel>> _fetchFarms({required int page}) async {
     final args = ref.watch(farmFilterProvider);
     final user = ref.watch(authStateProvider).value;
-    
+
     if (user == null || user.collectionCentreId == null) return [];
 
     final repository = ref.watch(farmRepositoryProvider);
@@ -82,16 +78,16 @@ class PaginatedFarmsNotifier extends AutoDisposeAsyncNotifier<List<FarmModel>> {
       page: page,
       pageSize: _pageSize,
     );
-    
+
     _hasMore = results.length == _pageSize;
     return results;
   }
 
   Future<void> loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     _isLoadingMore = true;
-    
+
     try {
       final nextFarms = await _fetchFarms(page: _page + 1);
       if (nextFarms.isNotEmpty) {
@@ -119,4 +115,7 @@ class PaginatedFarmsNotifier extends AutoDisposeAsyncNotifier<List<FarmModel>> {
   }
 }
 
-final paginatedFarmsProvider = AutoDisposeAsyncNotifierProvider<PaginatedFarmsNotifier, List<FarmModel>>(PaginatedFarmsNotifier.new);
+final paginatedFarmsProvider =
+    AsyncNotifierProvider.autoDispose<PaginatedFarmsNotifier, List<FarmModel>>(
+      PaginatedFarmsNotifier.new,
+    );

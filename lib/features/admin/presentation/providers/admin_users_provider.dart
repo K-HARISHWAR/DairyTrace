@@ -9,9 +9,7 @@ class UserFilterArgs {
   const UserFilterArgs({this.searchQuery = ''});
 
   UserFilterArgs copyWith({String? searchQuery}) {
-    return UserFilterArgs(
-      searchQuery: searchQuery ?? this.searchQuery,
-    );
+    return UserFilterArgs(searchQuery: searchQuery ?? this.searchQuery);
   }
 
   @override
@@ -34,9 +32,11 @@ class UserFilterNotifier extends Notifier<UserFilterArgs> {
   }
 }
 
-final userFilterProvider = NotifierProvider<UserFilterNotifier, UserFilterArgs>(UserFilterNotifier.new);
+final userFilterProvider = NotifierProvider<UserFilterNotifier, UserFilterArgs>(
+  UserFilterNotifier.new,
+);
 
-class AdminUsersNotifier extends AutoDisposeAsyncNotifier<List<ProfileModel>> {
+class AdminUsersNotifier extends AsyncNotifier<List<ProfileModel>> {
   int _page = 1;
   bool _hasMore = true;
   bool _isLoadingMore = false;
@@ -46,7 +46,7 @@ class AdminUsersNotifier extends AutoDisposeAsyncNotifier<List<ProfileModel>> {
   bool get isLoadingMore => _isLoadingMore;
 
   @override
-  FutureOr<List<ProfileModel>> build() async {
+  Future<List<ProfileModel>> build() async {
     _page = 1;
     _hasMore = true;
     return _fetchUsers(page: 1);
@@ -60,16 +60,16 @@ class AdminUsersNotifier extends AutoDisposeAsyncNotifier<List<ProfileModel>> {
       page: page,
       pageSize: _pageSize,
     );
-    
+
     _hasMore = results.length == _pageSize;
     return results;
   }
 
   Future<void> loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     _isLoadingMore = true;
-    
+
     try {
       final nextUsers = await _fetchUsers(page: _page + 1);
       if (nextUsers.isNotEmpty) {
@@ -97,11 +97,15 @@ class AdminUsersNotifier extends AutoDisposeAsyncNotifier<List<ProfileModel>> {
   }
 }
 
-final adminUsersProvider = AutoDisposeAsyncNotifierProvider<AdminUsersNotifier, List<ProfileModel>>(AdminUsersNotifier.new);
+final adminUsersProvider =
+    AsyncNotifierProvider.autoDispose<AdminUsersNotifier, List<ProfileModel>>(
+      AdminUsersNotifier.new,
+    );
 
-class ActiveCentresNotifier extends AutoDisposeAsyncNotifier<List<Map<String, dynamic>>> {
+class ActiveCentresNotifier
+    extends AsyncNotifier<List<Map<String, dynamic>>> {
   @override
-  FutureOr<List<Map<String, dynamic>>> build() async {
+  Future<List<Map<String, dynamic>>> build() async {
     return _fetchCentres();
   }
 
@@ -120,11 +124,16 @@ class ActiveCentresNotifier extends AutoDisposeAsyncNotifier<List<Map<String, dy
   }
 }
 
-final activeCentresProvider = AutoDisposeAsyncNotifierProvider<ActiveCentresNotifier, List<Map<String, dynamic>>>(ActiveCentresNotifier.new);
+final activeCentresProvider =
+    AsyncNotifierProvider.autoDispose<
+      ActiveCentresNotifier,
+      List<Map<String, dynamic>>
+    >(ActiveCentresNotifier.new);
 
-class ActiveDistributorsNotifier extends AutoDisposeAsyncNotifier<List<Map<String, dynamic>>> {
+class ActiveDistributorsNotifier
+    extends AsyncNotifier<List<Map<String, dynamic>>> {
   @override
-  FutureOr<List<Map<String, dynamic>>> build() async {
+  Future<List<Map<String, dynamic>>> build() async {
     return _fetchDistributors();
   }
 
@@ -143,4 +152,8 @@ class ActiveDistributorsNotifier extends AutoDisposeAsyncNotifier<List<Map<Strin
   }
 }
 
-final activeDistributorsProvider = AutoDisposeAsyncNotifierProvider<ActiveDistributorsNotifier, List<Map<String, dynamic>>>(ActiveDistributorsNotifier.new);
+final activeDistributorsProvider =
+    AsyncNotifierProvider.autoDispose<
+      ActiveDistributorsNotifier,
+      List<Map<String, dynamic>>
+    >(ActiveDistributorsNotifier.new);

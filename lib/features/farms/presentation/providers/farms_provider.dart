@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/farm_model.dart';
 import '../../data/repositories/farm_repository.dart';
 
-final farmsProvider = AsyncNotifierProvider<FarmsNotifier, List<FarmModel>>(FarmsNotifier.new);
+final farmsProvider = AsyncNotifierProvider<FarmsNotifier, List<FarmModel>>(
+  FarmsNotifier.new,
+);
 
 class FarmsNotifier extends AsyncNotifier<List<FarmModel>> {
   @override
-  FutureOr<List<FarmModel>> build() async {
+  Future<List<FarmModel>> build() async {
     return ref.watch(farmRepositoryProvider).getFarms();
   }
 

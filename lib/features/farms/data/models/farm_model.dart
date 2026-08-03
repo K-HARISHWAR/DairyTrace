@@ -79,21 +79,21 @@ class FarmModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        farmCode,
-        farmName,
-        ownerName,
-        phone,
-        village,
-        district,
-        state,
-        address,
-        latitude,
-        longitude,
-        collectionCentreId,
-        isActive,
-        createdBy,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    farmCode,
+    farmName,
+    ownerName,
+    phone,
+    village,
+    district,
+    state,
+    address,
+    latitude,
+    longitude,
+    collectionCentreId,
+    isActive,
+    createdBy,
+    createdAt,
+    updatedAt,
+  ];
 }

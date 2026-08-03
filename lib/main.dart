@@ -18,9 +18,5 @@ void main() async {
   // Initialize notifications safely. Permission is requested lazily later.
   await LocalNotificationService().initialize();
 
-  runApp(
-    const ProviderScope(
-      child: DairyTraceApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: DairyTraceApp()));
 }

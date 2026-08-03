@@ -41,43 +41,69 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
               data: (users) {
                 // Apply filters
                 var filtered = users.where((u) {
-                  final matchesSearch = u.fullName.toLowerCase().contains(_searchQuery) || u.email.toLowerCase().contains(_searchQuery);
-                  final matchesRole = _roleFilter == null || u.role == _roleFilter;
-                  final matchesStatus = _statusFilter == null || u.isActive == _statusFilter;
+                  final matchesSearch =
+                      u.fullName.toLowerCase().contains(_searchQuery) ||
+                      u.email.toLowerCase().contains(_searchQuery);
+                  final matchesRole =
+                      _roleFilter == null || u.role == _roleFilter;
+                  final matchesStatus =
+                      _statusFilter == null || u.isActive == _statusFilter;
                   return matchesSearch && matchesRole && matchesStatus;
                 }).toList();
 
                 if (filtered.isEmpty) {
-                  return const Center(child: Text('No users match the criteria.'));
+                  return const Center(
+                    child: Text('No users match the criteria.'),
+                  );
                 }
 
                 return ListView.separated(
                   padding: const EdgeInsets.all(16.0),
                   itemCount: filtered.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final user = filtered[index];
                     return Card(
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primaryContainer,
                           child: Text(user.fullName[0].toUpperCase()),
                         ),
-                        title: Text(user.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(
+                          user.fullName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Text('${user.email} • ${user.role.value}'),
                         trailing: Switch(
                           value: user.isActive,
                           activeColor: Colors.green,
-                          onChanged: user.role == UserRole.admin ? null : (val) async {
-                            try {
-                              await ref.read(adminRepositoryProvider).updateUserStatus(user.id, val);
-                              ref.invalidate(adminUsersProvider); // Refresh list
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status: $e')));
-                              }
-                            }
-                          },
+                          onChanged: user.role == UserRole.admin
+                              ? null
+                              : (val) async {
+                                  try {
+                                    await ref
+                                        .read(adminRepositoryProvider)
+                                        .updateUserStatus(user.id, val);
+                                    ref.invalidate(
+                                      adminUsersProvider,
+                                    ); // Refresh list
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Failed to update status: $e',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
                         ),
                       ),
                     );
@@ -103,10 +129,13 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
             decoration: InputDecoration(
               hintText: 'Search name or email...',
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+            onChanged: (val) =>
+                setState(() => _searchQuery = val.toLowerCase()),
           ),
           const SizedBox(height: 12),
           SingleChildScrollView(
@@ -119,7 +148,9 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
                   onSelected: (val) => setState(() => _roleFilter = val),
                   dropdownMenuEntries: [
                     const DropdownMenuEntry(value: null, label: 'All Roles'),
-                    ...UserRole.values.map((e) => DropdownMenuEntry(value: e, label: e.value)),
+                    ...UserRole.values.map(
+                      (e) => DropdownMenuEntry(value: e, label: e.value),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 12),

@@ -5,7 +5,7 @@ import '../../data/repositories/batch_repository.dart';
 
 class BatchesNotifier extends AsyncNotifier<List<BatchModel>> {
   @override
-  FutureOr<List<BatchModel>> build() async {
+  Future<List<BatchModel>> build() async {
     return ref.watch(batchRepositoryProvider).getBatches();
   }
 
@@ -28,27 +28,11 @@ class BatchesNotifier extends AsyncNotifier<List<BatchModel>> {
   }
 }
 
-final batchesProvider = AsyncNotifierProvider<BatchesNotifier, List<BatchModel>>(BatchesNotifier.new);
+final batchesProvider =
+    AsyncNotifierProvider<BatchesNotifier, List<BatchModel>>(
+      BatchesNotifier.new,
+    );
 
-class BatchByIdNotifier extends FamilyAsyncNotifier<BatchModel, String> {
-  @override
-  FutureOr<BatchModel> build(String arg) async {
-    return _fetchBatch(arg);
-  }
-
-  Future<BatchModel> _fetchBatch(String id) async {
-    return ref.watch(batchRepositoryProvider).getBatchById(id);
-  }
-
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    try {
-      final batch = await _fetchBatch(arg);
-      state = AsyncData(batch);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
-  }
-}
-
-final batchByIdProvider = AsyncNotifierProviderFamily<BatchByIdNotifier, BatchModel, String>(BatchByIdNotifier.new);
+final batchByIdProvider = FutureProvider.family<BatchModel, String>((ref, id) async {
+  return ref.watch(batchRepositoryProvider).getBatchById(id);
+});

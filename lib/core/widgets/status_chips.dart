@@ -89,6 +89,11 @@ class BatchStatusChip extends StatelessWidget {
           color = Colors.teal;
           icon = Icons.local_shipping;
           break;
+        case BatchStatus.delayed:
+          label = 'Delayed';
+          color = Colors.deepOrange;
+          icon = Icons.access_time_filled;
+          break;
       }
     } else if (rawStatus != null) {
       label = rawStatus!.toUpperCase();
@@ -99,7 +104,8 @@ class BatchStatusChip extends StatelessWidget {
 }
 
 class QualityStatusChip extends StatelessWidget {
-  final String? qualityStatus; // typically 'pending', 'passed', 'failed', 'warning'
+  final String?
+  qualityStatus; // typically 'pending', 'passed', 'failed', 'warning'
 
   const QualityStatusChip({super.key, this.qualityStatus});
 
@@ -179,6 +185,11 @@ class DeliveryStatusChip extends StatelessWidget {
           label = 'Delayed';
           color = Colors.red;
           icon = Icons.error_outline;
+          break;
+        case DeliveryStatus.cancelled:
+          label = 'Cancelled';
+          color = Colors.red.shade900;
+          icon = Icons.cancel;
           break;
       }
     } else if (rawStatus != null) {

@@ -5,30 +5,11 @@ import 'package:intl/intl.dart';
 import '../../../../app/router/route_names.dart';
 import '../../data/repositories/public_trace_repository.dart';
 
-import 'dart:async';
 
-class PublicBatchNotifier extends AutoDisposeFamilyAsyncNotifier<Map<String, dynamic>?, String> {
-  @override
-  FutureOr<Map<String, dynamic>?> build(String arg) async {
-    return _fetchBatch(arg);
-  }
-
-  Future<Map<String, dynamic>?> _fetchBatch(String token) async {
-    return ref.watch(publicTraceRepositoryProvider).getPublicBatchTrace(token);
-  }
-
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    try {
-      final batch = await _fetchBatch(arg);
-      state = AsyncData(batch);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
-  }
-}
-
-final publicBatchProvider = AutoDisposeAsyncNotifierProviderFamily<PublicBatchNotifier, Map<String, dynamic>?, String>(PublicBatchNotifier.new);
+final publicBatchProvider =
+    FutureProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, token) async {
+  return ref.watch(publicTraceRepositoryProvider).getPublicBatchTrace(token);
+});
 
 class PublicBatchScreen extends ConsumerWidget {
   final String publicToken;
@@ -61,7 +42,8 @@ class PublicBatchScreen extends ConsumerWidget {
           return _buildProvenanceView(context, data);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, st) => Center(child: Text('Could not load batch data.\n\n$err')),
+        error: (err, st) =>
+            Center(child: Text('Could not load batch data.\n\n$err')),
       ),
     );
   }
@@ -119,7 +101,9 @@ class PublicBatchScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: verified ? Colors.green.shade800 : Colors.red.shade800,
+                    color: verified
+                        ? Colors.green.shade800
+                        : Colors.red.shade800,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -168,7 +152,11 @@ class PublicBatchScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, Map<String, dynamic> batch, Map<String, dynamic>? delivery) {
+  Widget _buildInfoCard(
+    BuildContext context,
+    Map<String, dynamic> batch,
+    Map<String, dynamic>? delivery,
+  ) {
     final dateFormat = DateFormat('MMM dd, yyyy - hh:mm a');
     final collectionDate = batch['collection_time'] != null
         ? dateFormat.format(DateTime.parse(batch['collection_time']))
@@ -181,23 +169,48 @@ class PublicBatchScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildDetailRow('Batch Code', batch['batch_code'] ?? 'Unknown', isBold: true),
+            _buildDetailRow(
+              'Batch Code',
+              batch['batch_code'] ?? 'Unknown',
+              isBold: true,
+            ),
             const Divider(),
-            _buildStatusChipRow('Status', _formatStatus(batch['overall_status'] ?? 'Unknown'), _getStatusColor(batch['overall_status'])),
+            _buildStatusChipRow(
+              'Status',
+              _formatStatus(batch['overall_status'] ?? 'Unknown'),
+              _getStatusColor(batch['overall_status']),
+            ),
             const Divider(),
-            _buildDetailRow('Stage', _formatStage(batch['current_stage'] ?? 'Unknown')),
+            _buildDetailRow(
+              'Stage',
+              _formatStage(batch['current_stage'] ?? 'Unknown'),
+            ),
             const Divider(),
-            _buildDetailRow('Source Farm', '${batch['farm_name'] ?? 'Unknown'} (${batch['farm_village'] ?? 'Unknown'})'),
+            _buildDetailRow(
+              'Source Farm',
+              '${batch['farm_name'] ?? 'Unknown'} (${batch['farm_village'] ?? 'Unknown'})',
+            ),
             const Divider(),
-            _buildDetailRow('Collection Centre', batch['collection_centre_name'] ?? 'Unknown'),
+            _buildDetailRow(
+              'Collection Centre',
+              batch['collection_centre_name'] ?? 'Unknown',
+            ),
             const Divider(),
             _buildDetailRow('Collection Date', collectionDate),
             const Divider(),
-            _buildStatusChipRow('Quality State', _formatStatus(batch['quality_status'] ?? 'Unknown'), _getQualityColor(batch['quality_status'])),
+            _buildStatusChipRow(
+              'Quality State',
+              _formatStatus(batch['quality_status'] ?? 'Unknown'),
+              _getQualityColor(batch['quality_status']),
+            ),
             if (delivery != null) ...[
               const Divider(),
-              _buildStatusChipRow('Delivery State', _formatStatus(delivery['status'] ?? 'Unknown'), _getDeliveryColor(delivery['status'])),
-            ]
+              _buildStatusChipRow(
+                'Delivery State',
+                _formatStatus(delivery['status'] ?? 'Unknown'),
+                _getDeliveryColor(delivery['status']),
+              ),
+            ],
           ],
         ),
       ),
@@ -218,25 +231,48 @@ class PublicBatchScreen extends ConsumerWidget {
         children: [
           Text(
             'Latest Checkpoint: ${_formatStage(check['checkpoint'] ?? 'Unknown')}',
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildQualityMetric('Fat %', '${check['fat_percentage'] ?? 'N/A'}%'),
-              _buildQualityMetric('SNF %', '${check['snf_percentage'] ?? 'N/A'}%'),
-              _buildQualityMetric('Temp', '${check['temperature_celsius'] ?? 'N/A'}°C'),
+              _buildQualityMetric(
+                'Fat %',
+                '${check['fat_percentage'] ?? 'N/A'}%',
+              ),
+              _buildQualityMetric(
+                'SNF %',
+                '${check['snf_percentage'] ?? 'N/A'}%',
+              ),
+              _buildQualityMetric(
+                'Temp',
+                '${check['temperature_celsius'] ?? 'N/A'}°C',
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Purity Check', style: TextStyle(color: Colors.black87)),
+              const Text(
+                'Purity Check',
+                style: TextStyle(color: Colors.black87),
+              ),
               Icon(
-                check['purity_passed'] == true ? Icons.check_circle : (check['purity_passed'] == false ? Icons.cancel : Icons.help),
-                color: check['purity_passed'] == true ? Colors.green : (check['purity_passed'] == false ? Colors.red : Colors.grey),
+                check['purity_passed'] == true
+                    ? Icons.check_circle
+                    : (check['purity_passed'] == false
+                          ? Icons.cancel
+                          : Icons.help),
+                color: check['purity_passed'] == true
+                    ? Colors.green
+                    : (check['purity_passed'] == false
+                          ? Colors.red
+                          : Colors.grey),
               ),
             ],
           ),
@@ -244,8 +280,16 @@ class PublicBatchScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Overall Status', style: TextStyle(fontWeight: FontWeight.bold)),
-              _buildStatusChipRow('', _formatStatus(check['evaluated_result'] ?? 'Unknown'), _getQualityColor(check['evaluated_result']), hideLabel: true),
+              const Text(
+                'Overall Status',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              _buildStatusChipRow(
+                '',
+                _formatStatus(check['evaluated_result'] ?? 'Unknown'),
+                _getQualityColor(check['evaluated_result']),
+                hideLabel: true,
+              ),
             ],
           ),
         ],
@@ -256,9 +300,15 @@ class PublicBatchScreen extends ConsumerWidget {
   Widget _buildQualityMetric(String label, String value) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.black54, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.black54, fontSize: 12),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(
+          value,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
       ],
     );
   }
@@ -276,8 +326,8 @@ class PublicBatchScreen extends ConsumerWidget {
           final event = journey[index];
           final isFirst = index == 0;
           final isLast = index == journey.length - 1;
-          
-          final dateStr = event['occurred_at'] != null 
+
+          final dateStr = event['occurred_at'] != null
               ? dateFormat.format(DateTime.parse(event['occurred_at']))
               : '';
 
@@ -293,7 +343,9 @@ class PublicBatchScreen extends ConsumerWidget {
                       Container(
                         width: 2,
                         height: 20,
-                        color: isFirst ? Colors.transparent : Colors.blue.shade200,
+                        color: isFirst
+                            ? Colors.transparent
+                            : Colors.blue.shade200,
                       ),
                       Container(
                         width: 12,
@@ -307,7 +359,9 @@ class PublicBatchScreen extends ConsumerWidget {
                       Expanded(
                         child: Container(
                           width: 2,
-                          color: isLast ? Colors.transparent : Colors.blue.shade200,
+                          color: isLast
+                              ? Colors.transparent
+                              : Colors.blue.shade200,
                         ),
                       ),
                     ],
@@ -316,7 +370,11 @@ class PublicBatchScreen extends ConsumerWidget {
                 // Timeline content
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 12, bottom: 24, top: 16),
+                    padding: const EdgeInsets.only(
+                      left: 12,
+                      bottom: 24,
+                      top: 16,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -325,11 +383,17 @@ class PublicBatchScreen extends ConsumerWidget {
                           children: [
                             Text(
                               _formatStage(event['stage'] ?? 'Unknown'),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                             Text(
                               dateStr,
-                              style: const TextStyle(color: Colors.black54, fontSize: 12),
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -338,11 +402,18 @@ class PublicBatchScreen extends ConsumerWidget {
                             padding: const EdgeInsets.only(top: 4),
                             child: Row(
                               children: [
-                                const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 14,
+                                  color: Colors.grey,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   event['location_name'],
-                                  style: const TextStyle(color: Colors.black87, fontSize: 13),
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ],
                             ),
@@ -358,7 +429,11 @@ class PublicBatchScreen extends ConsumerWidget {
                               ),
                               child: Text(
                                 event['public_remarks'],
-                                style: const TextStyle(color: Colors.black87, fontSize: 13, fontStyle: FontStyle.italic),
+                                style: const TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                             ),
                           ),
@@ -383,20 +458,30 @@ class PublicBatchScreen extends ConsumerWidget {
           Text(label, style: const TextStyle(color: Colors.black54)),
           Text(
             value,
-            style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal),
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusChipRow(String label, String value, Color color, {bool hideLabel = false}) {
+  Widget _buildStatusChipRow(
+    String label,
+    String value,
+    Color color, {
+    bool hideLabel = false,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: hideLabel ? 0 : 4.0),
       child: Row(
-        mainAxisAlignment: hideLabel ? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: hideLabel
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.spaceBetween,
         children: [
-          if (!hideLabel) Text(label, style: const TextStyle(color: Colors.black54)),
+          if (!hideLabel)
+            Text(label, style: const TextStyle(color: Colors.black54)),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -406,7 +491,11 @@ class PublicBatchScreen extends ConsumerWidget {
             ),
             child: Text(
               value,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
           ),
         ],
@@ -416,56 +505,90 @@ class PublicBatchScreen extends ConsumerWidget {
 
   String _formatStatus(String status) {
     switch (status) {
-      case 'pending_quality': return 'Pending';
-      case 'accepted': return 'Passed';
-      case 'rejected': return 'Rejected';
-      case 'in_progress': return 'In Progress';
-      case 'delayed': return 'Delayed';
-      case 'spoiled': return 'Spoiled';
-      case 'delivered': return 'Delivered';
-      case 'passed': return 'Passed';
-      case 'failed': return 'Failed';
-      case 'warning': return 'Warning';
-      case 'assigned': return 'Assigned';
-      case 'picked_up': return 'Picked Up';
-      case 'in_transit': return 'In Transit';
-      default: return status.toUpperCase();
+      case 'pending_quality':
+        return 'Pending';
+      case 'accepted':
+        return 'Passed';
+      case 'rejected':
+        return 'Rejected';
+      case 'in_progress':
+        return 'In Progress';
+      case 'delayed':
+        return 'Delayed';
+      case 'spoiled':
+        return 'Spoiled';
+      case 'delivered':
+        return 'Delivered';
+      case 'passed':
+        return 'Passed';
+      case 'failed':
+        return 'Failed';
+      case 'warning':
+        return 'Warning';
+      case 'assigned':
+        return 'Assigned';
+      case 'picked_up':
+        return 'Picked Up';
+      case 'in_transit':
+        return 'In Transit';
+      default:
+        return status.toUpperCase();
     }
   }
 
   String _formatStage(String stage) {
-    return stage.split('_').map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '').join(' ');
+    return stage
+        .split('_')
+        .map(
+          (word) => word.isNotEmpty
+              ? '${word[0].toUpperCase()}${word.substring(1)}'
+              : '',
+        )
+        .join(' ');
   }
 
   Color _getStatusColor(String? status) {
     switch (status) {
       case 'accepted':
-      case 'delivered': return Colors.green;
+      case 'delivered':
+        return Colors.green;
       case 'rejected':
-      case 'spoiled': return Colors.red;
-      case 'delayed': return Colors.orange;
-      default: return Colors.blue;
+      case 'spoiled':
+        return Colors.red;
+      case 'delayed':
+        return Colors.orange;
+      default:
+        return Colors.blue;
     }
   }
 
   Color _getQualityColor(String? status) {
     switch (status) {
       case 'passed':
-      case 'accepted': return Colors.green;
+      case 'accepted':
+        return Colors.green;
       case 'failed':
-      case 'rejected': return Colors.red;
-      case 'warning': return Colors.orange;
-      default: return Colors.grey;
+      case 'rejected':
+        return Colors.red;
+      case 'warning':
+        return Colors.orange;
+      default:
+        return Colors.grey;
     }
   }
 
   Color _getDeliveryColor(String? status) {
     switch (status) {
-      case 'delivered': return Colors.green;
-      case 'delayed': return Colors.orange;
-      case 'in_transit': return Colors.blue;
-      case 'picked_up': return Colors.teal;
-      default: return Colors.grey;
+      case 'delivered':
+        return Colors.green;
+      case 'delayed':
+        return Colors.orange;
+      case 'in_transit':
+        return Colors.blue;
+      case 'picked_up':
+        return Colors.teal;
+      default:
+        return Colors.grey;
     }
   }
 }

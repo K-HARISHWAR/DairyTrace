@@ -19,7 +19,7 @@ class TrackingRepository {
         .select()
         .eq('batch_id', batchId)
         .order('occurred_at', ascending: false);
-        
+
     return (data as List).map((e) => TrackingEventModel.fromJson(e)).toList();
   }
 
@@ -34,18 +34,22 @@ class TrackingRepository {
     String? remarks,
   }) async {
     final userId = _client.auth.currentUser!.id;
-    
-    final data = await _client.from(DatabaseTables.trackingEvents).insert({
-      'batch_id': batchId,
-      'stage': stage,
-      'event_type': eventType,
-      'status': status,
-      'location_name': locationName,
-      'latitude': latitude,
-      'longitude': longitude,
-      'remarks': remarks,
-      'created_by': userId,
-    }).select().single();
+
+    final data = await _client
+        .from(DatabaseTables.trackingEvents)
+        .insert({
+          'batch_id': batchId,
+          'stage': stage,
+          'event_type': eventType,
+          'status': status,
+          'location_name': locationName,
+          'latitude': latitude,
+          'longitude': longitude,
+          'remarks': remarks,
+          'created_by': userId,
+        })
+        .select()
+        .single();
 
     return TrackingEventModel.fromJson(data);
   }

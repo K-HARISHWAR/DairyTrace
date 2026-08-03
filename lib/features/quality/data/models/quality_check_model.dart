@@ -67,18 +67,18 @@ class QualityCheckModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        batchId,
-        checkpoint,
-        fatPercentage,
-        snfPercentage,
-        temperatureC,
-        purityPassed,
-        manualResult,
-        evaluatedResult,
-        remarks,
-        checkedBy,
-        checkedAt,
-        createdAt,
-      ];
+    id,
+    batchId,
+    checkpoint,
+    fatPercentage,
+    snfPercentage,
+    temperatureC,
+    purityPassed,
+    manualResult,
+    evaluatedResult,
+    remarks,
+    checkedBy,
+    checkedAt,
+    createdAt,
+  ];
 }

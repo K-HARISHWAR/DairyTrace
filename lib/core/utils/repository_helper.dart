@@ -8,14 +8,25 @@ mixin RepositoryHelper {
       return await action();
     } on PostgrestException catch (e) {
       if (e.code == '42501') {
-        throw AuthException('Permission denied. You do not have access to this resource.', code: e.code, originalError: e);
+        throw AppAuthException(
+          'Permission denied. You do not have access to this resource.',
+          code: e.code,
+          originalError: e,
+        );
       }
-      throw RepositoryException('Database error: ${e.message}', code: e.code, originalError: e);
+      throw RepositoryException(
+        'Database error: ${e.message}',
+        code: e.code,
+        originalError: e,
+      );
     } on AuthException catch (e) {
-      throw AuthException(e.message, originalError: e);
+      throw AppAuthException(e.message, originalError: e);
     } catch (e) {
       // Handle network, parsing, or unexpected errors
-      throw RepositoryException('An unexpected error occurred: $e', originalError: e);
+      throw RepositoryException(
+        'An unexpected error occurred: $e',
+        originalError: e,
+      );
     }
   }
 

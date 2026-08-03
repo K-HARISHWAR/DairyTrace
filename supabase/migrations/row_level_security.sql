@@ -89,3 +89,17 @@ CREATE POLICY "Distributors can read alerts for their deliveries" ON alerts FOR 
 CREATE POLICY "Users can read own notifications" ON app_notifications FOR SELECT USING (recipient_profile_id = auth.uid());
 CREATE POLICY "Users can update own notifications" ON app_notifications FOR UPDATE USING (recipient_profile_id = auth.uid());
 CREATE POLICY "Admin can read all notifications" ON app_notifications FOR SELECT USING (is_admin());
+
+-- Batch Documents
+ALTER TABLE batch_documents ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admin can manage batch documents" ON batch_documents FOR ALL USING (is_admin());
+CREATE POLICY "Staff can read batch documents for their centre" ON batch_documents FOR SELECT USING (
+  EXISTS (SELECT 1 FROM batches WHERE batches.id = batch_documents.batch_id AND batches.collection_centre_id = current_collection_centre_id())
+);
+CREATE POLICY "Staff can insert batch documents for their centre" ON batch_documents FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM batches WHERE batches.id = batch_id AND batches.collection_centre_id = current_collection_centre_id())
+  AND uploaded_by = auth.uid()
+);
+CREATE POLICY "Distributors can read batch documents of assigned batches" ON batch_documents FOR SELECT USING (
+  EXISTS (SELECT 1 FROM deliveries WHERE deliveries.batch_id = batch_documents.batch_id AND deliveries.assigned_to = auth.uid())
+);

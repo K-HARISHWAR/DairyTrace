@@ -20,7 +20,7 @@ class DeliveryModel extends Equatable {
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
-  
+
   // Joined fields
   final String? batchCode;
   final double? quantityLitres;
@@ -62,10 +62,18 @@ class DeliveryModel extends Equatable {
       driverName: json['driver_name'],
       driverPhone: json['driver_phone'],
       assignedAt: DateTime.parse(json['assigned_at']),
-      expectedPickupAt: json['expected_pickup_at'] != null ? DateTime.parse(json['expected_pickup_at']) : null,
-      actualPickupAt: json['actual_pickup_at'] != null ? DateTime.parse(json['actual_pickup_at']) : null,
-      expectedDeliveryAt: json['expected_delivery_at'] != null ? DateTime.parse(json['expected_delivery_at']) : null,
-      actualDeliveryAt: json['actual_delivery_at'] != null ? DateTime.parse(json['actual_delivery_at']) : null,
+      expectedPickupAt: json['expected_pickup_at'] != null
+          ? DateTime.parse(json['expected_pickup_at'])
+          : null,
+      actualPickupAt: json['actual_pickup_at'] != null
+          ? DateTime.parse(json['actual_pickup_at'])
+          : null,
+      expectedDeliveryAt: json['expected_delivery_at'] != null
+          ? DateTime.parse(json['expected_delivery_at'])
+          : null,
+      actualDeliveryAt: json['actual_delivery_at'] != null
+          ? DateTime.parse(json['actual_delivery_at'])
+          : null,
       status: DeliveryStatus.fromString(json['status']),
       delayReason: json['delay_reason'],
       deliveryNotes: json['delivery_notes'],
@@ -73,7 +81,9 @@ class DeliveryModel extends Equatable {
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       batchCode: json['batches']?['batch_code'],
-      quantityLitres: json['batches']?['quantity_litres'] != null ? (json['batches']['quantity_litres'] as num).toDouble() : null,
+      quantityLitres: json['batches']?['quantity_litres'] != null
+          ? (json['batches']['quantity_litres'] as num).toDouble()
+          : null,
       collectionCentreName: json['batches']?['collection_centres']?['name'],
       farmName: json['batches']?['farms']?['farm_name'],
     );
@@ -102,23 +112,23 @@ class DeliveryModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        batchId,
-        distributorOrganisationId,
-        assignedTo,
-        vehicleNumber,
-        driverName,
-        driverPhone,
-        assignedAt,
-        expectedPickupAt,
-        actualPickupAt,
-        expectedDeliveryAt,
-        actualDeliveryAt,
-        status,
-        delayReason,
-        deliveryNotes,
-        createdBy,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    batchId,
+    distributorOrganisationId,
+    assignedTo,
+    vehicleNumber,
+    driverName,
+    driverPhone,
+    assignedAt,
+    expectedPickupAt,
+    actualPickupAt,
+    expectedDeliveryAt,
+    actualDeliveryAt,
+    status,
+    delayReason,
+    deliveryNotes,
+    createdBy,
+    createdAt,
+    updatedAt,
+  ];
 }

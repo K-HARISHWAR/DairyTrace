@@ -15,11 +15,11 @@ class FarmRepository {
 
   Future<List<FarmModel>> getFarms({String? collectionCentreId}) async {
     var query = _client.from(DatabaseTables.farms).select();
-    
+
     if (collectionCentreId != null) {
       query = query.eq('collection_centre_id', collectionCentreId);
     }
-    
+
     final data = await query.order('created_at', ascending: false);
     return (data as List).map((e) => FarmModel.fromJson(e)).toList();
   }
@@ -31,10 +31,15 @@ class FarmRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
-    var query = _client.from(DatabaseTables.farms).select().eq('collection_centre_id', collectionCentreId);
-    
+    var query = _client
+        .from(DatabaseTables.farms)
+        .select()
+        .eq('collection_centre_id', collectionCentreId);
+
     if (searchQuery != null && searchQuery.isNotEmpty) {
-      query = query.or('farm_name.ilike.%$searchQuery%,farm_code.ilike.%$searchQuery%,owner_name.ilike.%$searchQuery%,village.ilike.%$searchQuery%');
+      query = query.or(
+        'farm_name.ilike.%$searchQuery%,farm_code.ilike.%$searchQuery%,owner_name.ilike.%$searchQuery%,village.ilike.%$searchQuery%',
+      );
     }
 
     if (isActive != null) {
@@ -44,12 +49,18 @@ class FarmRepository {
     final from = (page - 1) * pageSize;
     final to = from + pageSize - 1;
 
-    final data = await query.range(from, to).order('created_at', ascending: false);
+    final data = await query
+        .range(from, to)
+        .order('created_at', ascending: false);
     return (data as List).map((e) => FarmModel.fromJson(e)).toList();
   }
 
   Future<FarmModel> getFarmById(String id) async {
-    final data = await _client.from(DatabaseTables.farms).select().eq('id', id).single();
+    final data = await _client
+        .from(DatabaseTables.farms)
+        .select()
+        .eq('id', id)
+        .single();
     return FarmModel.fromJson(data);
   }
 
@@ -67,21 +78,25 @@ class FarmRepository {
     required String collectionCentreId,
   }) async {
     final userId = _client.auth.currentUser!.id;
-    
-    final data = await _client.from(DatabaseTables.farms).insert({
-      'farm_code': farmCode,
-      'farm_name': farmName,
-      'owner_name': ownerName,
-      'phone': phone,
-      'village': village,
-      'district': district,
-      'state': state,
-      'address': address,
-      'latitude': latitude,
-      'longitude': longitude,
-      'collection_centre_id': collectionCentreId,
-      'created_by': userId,
-    }).select().single();
+
+    final data = await _client
+        .from(DatabaseTables.farms)
+        .insert({
+          'farm_code': farmCode,
+          'farm_name': farmName,
+          'owner_name': ownerName,
+          'phone': phone,
+          'village': village,
+          'district': district,
+          'state': state,
+          'address': address,
+          'latitude': latitude,
+          'longitude': longitude,
+          'collection_centre_id': collectionCentreId,
+          'created_by': userId,
+        })
+        .select()
+        .single();
 
     return FarmModel.fromJson(data);
   }

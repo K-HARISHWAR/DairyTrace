@@ -19,7 +19,7 @@ class QualityRepository {
         .select()
         .eq('batch_id', batchId)
         .order('checked_at', ascending: false);
-        
+
     return (data as List).map((e) => QualityCheckModel.fromJson(e)).toList();
   }
 
@@ -34,18 +34,22 @@ class QualityRepository {
     String? remarks,
   }) async {
     final userId = _client.auth.currentUser!.id;
-    
-    final data = await _client.from(DatabaseTables.qualityChecks).insert({
-      'batch_id': batchId,
-      'checkpoint': checkpoint,
-      'fat_percentage': fatPercentage,
-      'snf_percentage': snfPercentage,
-      'temperature_c': temperatureC,
-      'purity_passed': purityPassed,
-      'manual_result': manualResult,
-      'remarks': remarks,
-      'checked_by': userId,
-    }).select().single();
+
+    final data = await _client
+        .from(DatabaseTables.qualityChecks)
+        .insert({
+          'batch_id': batchId,
+          'checkpoint': checkpoint,
+          'fat_percentage': fatPercentage,
+          'snf_percentage': snfPercentage,
+          'temperature_c': temperatureC,
+          'purity_passed': purityPassed,
+          'manual_result': manualResult,
+          'remarks': remarks,
+          'checked_by': userId,
+        })
+        .select()
+        .single();
 
     return QualityCheckModel.fromJson(data);
   }

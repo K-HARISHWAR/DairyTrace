@@ -13,12 +13,14 @@ class DistributorDashboardScreen extends ConsumerStatefulWidget {
   const DistributorDashboardScreen({super.key});
 
   @override
-  ConsumerState<DistributorDashboardScreen> createState() => _DistributorDashboardScreenState();
+  ConsumerState<DistributorDashboardScreen> createState() =>
+      _DistributorDashboardScreenState();
 }
 
-class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboardScreen> {
+class _DistributorDashboardScreenState
+    extends ConsumerState<DistributorDashboardScreen> {
   DeliveryStatus? _statusFilter;
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -31,7 +33,8 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(deliveriesProvider.notifier).fetchDeliveries(),
+            onPressed: () =>
+                ref.read(deliveriesProvider.notifier).refresh(),
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -46,7 +49,8 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.read(deliveriesProvider.notifier).fetchDeliveries(),
+          onRefresh: () =>
+              ref.read(deliveriesProvider.notifier).refresh(),
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -72,7 +76,9 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
                 data: (deliveries) {
                   final filtered = _statusFilter == null
                       ? deliveries
-                      : deliveries.where((d) => d.status == _statusFilter).toList();
+                      : deliveries
+                            .where((d) => d.status == _statusFilter)
+                            .toList();
 
                   if (filtered.isEmpty) {
                     return const SliverFillRemaining(
@@ -81,12 +87,9 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
                   }
 
                   return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return _buildDeliveryCard(context, filtered[index]);
-                      },
-                      childCount: filtered.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return _buildDeliveryCard(context, filtered[index]);
+                    }, childCount: filtered.length),
                   );
                 },
                 loading: () => const SliverFillRemaining(
@@ -137,7 +140,7 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
 
   Widget _buildDeliveryCard(BuildContext context, DeliveryModel delivery) {
     final dateFormat = DateFormat('MMM dd, hh:mm a');
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 2,
@@ -152,20 +155,43 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
               children: [
                 Text(
                   delivery.batchCode ?? 'Unknown Batch',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 _buildStatusBadge(delivery.status),
               ],
             ),
             const Divider(),
-            _buildInfoRow(Icons.business, 'Source', '${delivery.farmName ?? "Farm"} -> ${delivery.collectionCentreName ?? "Centre"}'),
-            _buildInfoRow(Icons.scale, 'Quantity', '${delivery.quantityLitres ?? 0} L'),
-            _buildInfoRow(Icons.local_shipping, 'Vehicle', delivery.vehicleNumber ?? 'Not assigned'),
+            _buildInfoRow(
+              Icons.business,
+              'Source',
+              '${delivery.farmName ?? "Farm"} -> ${delivery.collectionCentreName ?? "Centre"}',
+            ),
+            _buildInfoRow(
+              Icons.scale,
+              'Quantity',
+              '${delivery.quantityLitres ?? 0} L',
+            ),
+            _buildInfoRow(
+              Icons.local_shipping,
+              'Vehicle',
+              delivery.vehicleNumber ?? 'Not assigned',
+            ),
             if (delivery.expectedPickupAt != null)
-              _buildInfoRow(Icons.schedule, 'Exp. Pickup', dateFormat.format(delivery.expectedPickupAt!)),
+              _buildInfoRow(
+                Icons.schedule,
+                'Exp. Pickup',
+                dateFormat.format(delivery.expectedPickupAt!),
+              ),
             if (delivery.expectedDeliveryAt != null)
-              _buildInfoRow(Icons.event_available, 'Exp. Delivery', dateFormat.format(delivery.expectedDeliveryAt!)),
-            
+              _buildInfoRow(
+                Icons.event_available,
+                'Exp. Delivery',
+                dateFormat.format(delivery.expectedDeliveryAt!),
+              ),
+
             const SizedBox(height: 16),
             _buildActionButtons(context, delivery),
           ],
@@ -182,7 +208,10 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
         children: [
           Icon(icon, size: 16, color: Colors.grey),
           const SizedBox(width: 8),
-          Text('$label: ', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text(
+            '$label: ',
+            style: const TextStyle(color: Colors.grey, fontSize: 13),
+          ),
           Expanded(
             child: Text(
               value,
@@ -213,7 +242,6 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
         color = Colors.teal;
         break;
       case DeliveryStatus.assigned:
-      default:
         color = Colors.grey.shade700;
         break;
     }
@@ -227,7 +255,11 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
       ),
       child: Text(
         status.value.toUpperCase().replaceAll('_', ' '),
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -239,26 +271,42 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
       children: [
         if (delivery.status == DeliveryStatus.assigned)
           ElevatedButton.icon(
-            onPressed: () => _showUpdateDialog(context, delivery, DeliveryStatus.pickedUp),
+            onPressed: () =>
+                _showUpdateDialog(context, delivery, DeliveryStatus.pickedUp),
             icon: const Icon(Icons.check_circle_outline, size: 18),
             label: const Text('Confirm Pickup'),
           ),
         if (delivery.status == DeliveryStatus.pickedUp)
           ElevatedButton.icon(
-            onPressed: () => _showUpdateDialog(context, delivery, DeliveryStatus.inTransit),
+            onPressed: () =>
+                _showUpdateDialog(context, delivery, DeliveryStatus.inTransit),
             icon: const Icon(Icons.directions_car, size: 18),
             label: const Text('Mark In Transit'),
           ),
-        if (delivery.status == DeliveryStatus.inTransit || delivery.status == DeliveryStatus.pickedUp)
+        if (delivery.status == DeliveryStatus.inTransit ||
+            delivery.status == DeliveryStatus.pickedUp)
           OutlinedButton.icon(
-            onPressed: () => _showUpdateDialog(context, delivery, DeliveryStatus.delayed),
-            icon: const Icon(Icons.warning_amber, size: 18, color: Colors.orange),
-            label: const Text('Report Delay', style: TextStyle(color: Colors.orange)),
+            onPressed: () =>
+                _showUpdateDialog(context, delivery, DeliveryStatus.delayed),
+            icon: const Icon(
+              Icons.warning_amber,
+              size: 18,
+              color: Colors.orange,
+            ),
+            label: const Text(
+              'Report Delay',
+              style: TextStyle(color: Colors.orange),
+            ),
           ),
-        if (delivery.status == DeliveryStatus.inTransit || delivery.status == DeliveryStatus.delayed)
+        if (delivery.status == DeliveryStatus.inTransit ||
+            delivery.status == DeliveryStatus.delayed)
           ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-            onPressed: () => _showUpdateDialog(context, delivery, DeliveryStatus.delivered),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () =>
+                _showUpdateDialog(context, delivery, DeliveryStatus.delivered),
             icon: const Icon(Icons.done_all, size: 18),
             label: const Text('Mark Delivered'),
           ),
@@ -266,7 +314,11 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
     );
   }
 
-  void _showUpdateDialog(BuildContext context, DeliveryModel delivery, DeliveryStatus newStatus) {
+  void _showUpdateDialog(
+    BuildContext context,
+    DeliveryModel delivery,
+    DeliveryStatus newStatus,
+  ) {
     final reasonController = TextEditingController();
     final locationController = TextEditingController();
     final notesController = TextEditingController();
@@ -279,7 +331,9 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Update to ${newStatus.value.replaceAll('_', ' ').toUpperCase()}'),
+              title: Text(
+                'Update to ${newStatus.value.replaceAll('_', ' ').toUpperCase()}',
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -320,38 +374,62 @@ class _DistributorDashboardScreenState extends ConsumerState<DistributorDashboar
                   onPressed: isLoading
                       ? null
                       : () async {
-                          if (newStatus == DeliveryStatus.delayed && reasonController.text.trim().isEmpty) {
+                          if (newStatus == DeliveryStatus.delayed &&
+                              reasonController.text.trim().isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Delay reason is required.')),
+                              const SnackBar(
+                                content: Text('Delay reason is required.'),
+                              ),
                             );
                             return;
                           }
 
                           setState(() => isLoading = true);
                           try {
-                            await ref.read(deliveriesProvider.notifier).updateDeliveryStatus(
+                            await ref
+                                .read(deliveriesProvider.notifier)
+                                .updateDeliveryStatus(
                                   deliveryId: delivery.id,
                                   status: newStatus,
-                                  delayReason: newStatus == DeliveryStatus.delayed ? reasonController.text.trim() : null,
-                                  locationName: locationController.text.trim().isEmpty ? null : locationController.text.trim(),
-                                  notes: notesController.text.trim().isEmpty ? null : notesController.text.trim(),
+                                  delayReason:
+                                      newStatus == DeliveryStatus.delayed
+                                      ? reasonController.text.trim()
+                                      : null,
+                                  locationName:
+                                      locationController.text.trim().isEmpty
+                                      ? null
+                                      : locationController.text.trim(),
+                                  notes: notesController.text.trim().isEmpty
+                                      ? null
+                                      : notesController.text.trim(),
                                 );
                             if (context.mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Status updated successfully')),
+                                const SnackBar(
+                                  content: Text('Status updated successfully'),
+                                ),
                               );
                             }
                           } catch (e) {
                             setState(() => isLoading = false);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Failed: $e'), backgroundColor: Colors.red),
+                                SnackBar(
+                                  content: Text('Failed: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
                             }
                           }
                         },
-                  child: isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Confirm'),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Confirm'),
                 ),
               ],
             );

@@ -4,9 +4,10 @@ import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../../../farms/data/models/farm_model.dart';
 import '../../../farms/data/repositories/farm_repository.dart';
 
-class ActiveFarmsDropdownNotifier extends AutoDisposeAsyncNotifier<List<FarmModel>> {
+class ActiveFarmsDropdownNotifier
+    extends AsyncNotifier<List<FarmModel>> {
   @override
-  FutureOr<List<FarmModel>> build() async {
+  Future<List<FarmModel>> build() async {
     return _fetchActiveFarms();
   }
 
@@ -34,4 +35,8 @@ class ActiveFarmsDropdownNotifier extends AutoDisposeAsyncNotifier<List<FarmMode
   }
 }
 
-final activeFarmsDropdownProvider = AutoDisposeAsyncNotifierProvider<ActiveFarmsDropdownNotifier, List<FarmModel>>(ActiveFarmsDropdownNotifier.new);
+final activeFarmsDropdownProvider =
+    AsyncNotifierProvider.autoDispose<
+      ActiveFarmsDropdownNotifier,
+      List<FarmModel>
+    >(ActiveFarmsDropdownNotifier.new);

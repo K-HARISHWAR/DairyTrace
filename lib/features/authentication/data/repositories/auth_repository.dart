@@ -32,7 +32,7 @@ class AuthRepository {
         .select()
         .eq('id', userId)
         .single();
-    
+
     return ProfileModel.fromJson(data);
   }
 

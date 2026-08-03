@@ -29,13 +29,12 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
     final batchAsync = ref.watch(batchByIdProvider(widget.batchId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Batch QR Code'),
-      ),
+      appBar: AppBar(title: const Text('Batch QR Code')),
       body: batchAsync.when(
         data: (batch) {
-          final isRejectedOrSpoiled = batch.overallStatus == BatchStatus.rejected || 
-                                      batch.overallStatus == BatchStatus.spoiled;
+          final isRejectedOrSpoiled =
+              batch.overallStatus == BatchStatus.rejected ||
+              batch.overallStatus == BatchStatus.spoiled;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
@@ -54,7 +53,10 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.warning_amber_rounded, color: Colors.red),
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.red,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -68,7 +70,7 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                       ],
                     ),
                   ),
-                
+
                 const Text(
                   'Public Trace Code',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -80,7 +82,7 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // QR Code
                 Center(
                   child: Container(
@@ -93,7 +95,7 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                           color: Colors.black.withOpacity(0.1),
                           blurRadius: 10,
                           spreadRadius: 2,
-                        )
+                        ),
                       ],
                     ),
                     child: QrImageView(
@@ -105,9 +107,9 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Batch Details
                 Card(
                   child: Padding(
@@ -116,14 +118,20 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                       children: [
                         _buildDetailRow('Batch Code', batch.batchCode),
                         const Divider(),
-                        _buildDetailRow('Status', batch.overallStatus.value.toUpperCase()),
+                        _buildDetailRow(
+                          'Status',
+                          batch.overallStatus.value.toUpperCase(),
+                        ),
                         const Divider(),
-                        _buildDetailRow('Quantity', '${batch.quantityLitres} L'),
+                        _buildDetailRow(
+                          'Quantity',
+                          '${batch.quantityLitres} L',
+                        ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 // Debug Options
                 if (kDebugMode) ...[
                   const SizedBox(height: 48),
@@ -131,7 +139,10 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                   const SizedBox(height: 16),
                   const Text(
                     'Debug: Manual Token Entry',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -163,14 +174,17 @@ class _BatchQrScreenState extends ConsumerState<BatchQrScreen> {
                       ),
                     ],
                   ),
-                ]
+                ],
               ],
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(
-          child: Text('Error loading batch: $err', style: const TextStyle(color: Colors.red)),
+          child: Text(
+            'Error loading batch: $err',
+            style: const TextStyle(color: Colors.red),
+          ),
         ),
       ),
     );

@@ -13,9 +13,7 @@ class AlertsScreen extends ConsumerWidget {
     final alertsAsync = ref.watch(alertsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Alerts'),
-      ),
+      appBar: AppBar(title: const Text('Alerts')),
       body: alertsAsync.when(
         data: (alerts) {
           if (alerts.isEmpty) {
@@ -36,7 +34,11 @@ class AlertsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAlertCard(BuildContext context, WidgetRef ref, AlertModel alert) {
+  Widget _buildAlertCard(
+    BuildContext context,
+    WidgetRef ref,
+    AlertModel alert,
+  ) {
     Color borderColor;
     Color iconColor;
     Color bgColor = Colors.white;
@@ -65,7 +67,6 @@ class AlertsScreen extends ConsumerWidget {
         icon = Icons.info_outline;
         break;
       case AlertSeverity.info:
-      default:
         borderColor = Colors.blue.shade200;
         iconColor = Colors.blue;
         icon = Icons.info;
@@ -79,12 +80,15 @@ class AlertsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: borderColor,
-          width: isCritical ? 2.0 : 1.0,
-        ),
+        border: Border.all(color: borderColor, width: isCritical ? 2.0 : 1.0),
         boxShadow: isCritical
-            ? [BoxShadow(color: Colors.red.withOpacity(0.2), blurRadius: 8, spreadRadius: 1)]
+            ? [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.2),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ]
             : null,
       ),
       child: ListTile(

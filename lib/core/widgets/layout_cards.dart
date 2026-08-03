@@ -70,7 +70,9 @@ class MetricCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -85,10 +87,14 @@ class MetricCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: (iconColor ?? Theme.of(context).primaryColor).withOpacity(0.1),
+                color: (iconColor ?? Theme.of(context).primaryColor)
+                    .withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: iconColor ?? Theme.of(context).primaryColor),
+              child: Icon(
+                icon,
+                color: iconColor ?? Theme.of(context).primaryColor,
+              ),
             ),
             const SizedBox(width: 16),
           ],

@@ -26,10 +26,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      await ref.read(authStateProvider.notifier).signIn(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      await ref
+          .read(authStateProvider.notifier)
+          .signIn(_emailController.text.trim(), _passwordController.text);
     }
   }
 
@@ -110,7 +109,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   keyboardType: TextInputType.emailAddress,
-                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -120,7 +120,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     prefixIcon: Icon(Icons.lock_outline),
                   ),
                   obscureText: true,
-                  validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(

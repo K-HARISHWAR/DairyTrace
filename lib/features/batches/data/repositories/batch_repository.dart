@@ -16,17 +16,24 @@ class BatchRepository with RepositoryHelper {
 
   BatchRepository(this._client);
 
-  Future<List<BatchModel>> getBatches({String? collectionCentreId, BatchStatus? status}) async {
+  Future<List<BatchModel>> getBatches({
+    String? collectionCentreId,
+    BatchStatus? status,
+  }) async {
     return executeDb(() async {
-      var query = _client.from(DatabaseTables.batches).select('id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at');
-      
+      var query = _client
+          .from(DatabaseTables.batches)
+          .select(
+            'id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at',
+          );
+
       if (collectionCentreId != null) {
         query = query.eq('collection_centre_id', collectionCentreId);
       }
       if (status != null) {
         query = query.eq('overall_status', status.value);
       }
-      
+
       final data = await query.order('created_at', ascending: false);
       return (data as List).map((e) => BatchModel.fromJson(e)).toList();
     });
@@ -41,8 +48,13 @@ class BatchRepository with RepositoryHelper {
     int pageSize = 20,
   }) async {
     return executeDb(() async {
-      var query = _client.from(DatabaseTables.batches).select('id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at').eq('collection_centre_id', collectionCentreId);
-      
+      var query = _client
+          .from(DatabaseTables.batches)
+          .select(
+            'id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at',
+          )
+          .eq('collection_centre_id', collectionCentreId);
+
       if (searchQuery != null && searchQuery.isNotEmpty) {
         query = query.ilike('batch_code', '%$searchQuery%');
       }
@@ -56,21 +68,31 @@ class BatchRepository with RepositoryHelper {
       final from = (page - 1) * pageSize;
       final to = from + pageSize - 1;
 
-      final data = await query.range(from, to).order('created_at', ascending: false);
+      final data = await query
+          .range(from, to)
+          .order('created_at', ascending: false);
       return (data as List).map((e) => BatchModel.fromJson(e)).toList();
     });
   }
 
   Future<BatchModel> getBatchById(String id) async {
     return executeDb(() async {
-      final data = await _client.from(DatabaseTables.batches).select('*, farms(*), collection_centres(*)').eq('id', id).single();
+      final data = await _client
+          .from(DatabaseTables.batches)
+          .select('*, farms(*), collection_centres(*)')
+          .eq('id', id)
+          .single();
       return BatchModel.fromJson(data);
     });
   }
 
   Future<BatchModel> getBatchByPublicToken(String token) async {
     return executeDb(() async {
-      final data = await _client.from(DatabaseTables.batches).select('*, farms(*), collection_centres(*)').eq('public_token', token).single();
+      final data = await _client
+          .from(DatabaseTables.batches)
+          .select('*, farms(*), collection_centres(*)')
+          .eq('public_token', token)
+          .single();
       return BatchModel.fromJson(data);
     });
   }
@@ -91,20 +113,24 @@ class BatchRepository with RepositoryHelper {
 
     // Use RPC if we wanted a true transaction, but Supabase JS/Dart client can't do multiple statements in one transaction easily without an RPC.
     // However, the PRD says: "Perform database writes transactionally where possible".
-    // We will do them sequentially. If batch creation succeeds, it exists. 
+    // We will do them sequentially. If batch creation succeeds, it exists.
     // The quality trigger will update it automatically when the quality_check is inserted.
 
-    final batchData = await _client.from(DatabaseTables.batches).insert({
-      'farm_id': farmId,
-      'collection_centre_id': collectionCentreId,
-      'quantity_litres': quantityLitres,
-      'collection_time': collectionTime.toIso8601String(),
-      'created_by': userId,
-      'notes': notes,
-      'current_stage': BatchStage.collection.value,
-      'overall_status': BatchStatus.inProgress.value,
-      'quality_status': 'pending', // Will be updated by trigger
-    }).select().single();
+    final batchData = await _client
+        .from(DatabaseTables.batches)
+        .insert({
+          'farm_id': farmId,
+          'collection_centre_id': collectionCentreId,
+          'quantity_litres': quantityLitres,
+          'collection_time': collectionTime.toIso8601String(),
+          'created_by': userId,
+          'notes': notes,
+          'current_stage': BatchStage.collection.value,
+          'overall_status': BatchStatus.inProgress.value,
+          'quality_status': 'pending', // Will be updated by trigger
+        })
+        .select()
+        .single();
 
     final batchId = batchData['id'] as String;
 
@@ -146,11 +172,12 @@ class BatchRepository with RepositoryHelper {
   }) async {
     return executeDb(() async {
       final userId = _client.auth.currentUser!.id;
-      
+
       // Update batch stage
-      await _client.from(DatabaseTables.batches).update({
-        'current_stage': newStage.value,
-      }).eq('id', batchId);
+      await _client
+          .from(DatabaseTables.batches)
+          .update({'current_stage': newStage.value})
+          .eq('id', batchId);
 
       // Record journey event
       await _client.from(DatabaseTables.trackingEvents).insert({

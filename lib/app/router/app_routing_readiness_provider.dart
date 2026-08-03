@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/authentication/presentation/providers/auth_provider.dart';
 import '../../core/enums/user_role.dart';
-import '../../features/authentication/data/models/profile_model.dart';
+
 
 class RoutingState {
   final bool isLoading;
@@ -38,12 +38,12 @@ class AppRoutingReadinessNotifier extends ChangeNotifier {
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       _checkState();
     });
-    
+
     // Also listen to Riverpod's auth/profile state if needed
     ref.listen(authStateProvider, (previous, next) {
       _checkState();
     });
-    
+
     _checkState();
   }
 
@@ -57,7 +57,7 @@ class AppRoutingReadinessNotifier extends ChangeNotifier {
 
     // Wait for the authProvider (which loads ProfileModel) to have data
     final profileAsyncValue = ref.read(authStateProvider);
-    
+
     if (profileAsyncValue is AsyncLoading) {
       _state = RoutingState(isLoading: true, isAuthenticated: true);
       notifyListeners();
@@ -65,7 +65,7 @@ class AppRoutingReadinessNotifier extends ChangeNotifier {
     }
 
     final profile = profileAsyncValue.value;
-    
+
     _state = RoutingState(
       isLoading: false,
       isAuthenticated: true,
@@ -77,6 +77,7 @@ class AppRoutingReadinessNotifier extends ChangeNotifier {
   }
 }
 
-final appRoutingReadinessProvider = ChangeNotifierProvider<AppRoutingReadinessNotifier>((ref) {
-  return AppRoutingReadinessNotifier(ref);
-});
+final appRoutingReadinessProvider =
+    Provider<AppRoutingReadinessNotifier>((ref) {
+      return AppRoutingReadinessNotifier(ref);
+    });

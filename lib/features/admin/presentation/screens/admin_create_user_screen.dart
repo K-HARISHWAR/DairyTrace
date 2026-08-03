@@ -9,7 +9,8 @@ class AdminCreateUserScreen extends ConsumerStatefulWidget {
   const AdminCreateUserScreen({super.key});
 
   @override
-  ConsumerState<AdminCreateUserScreen> createState() => _AdminCreateUserScreenState();
+  ConsumerState<AdminCreateUserScreen> createState() =>
+      _AdminCreateUserScreenState();
 }
 
 class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
@@ -21,7 +22,7 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
   UserRole _selectedRole = UserRole.collectionStaff;
   String? _selectedCentreId;
   String? _selectedDistributorId;
-  
+
   bool _isLoading = false;
 
   @override
@@ -38,26 +39,36 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await ref.read(adminRepositoryProvider).createUser(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        fullName: _fullNameController.text.trim(),
-        role: _selectedRole.value,
-        phone: _phoneController.text.trim(),
-        collectionCentreId: _selectedRole == UserRole.collectionStaff ? _selectedCentreId : null,
-        distributorId: _selectedRole == UserRole.distributor ? _selectedDistributorId : null,
-      );
-      
+      await ref
+          .read(adminRepositoryProvider)
+          .createUser(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            fullName: _fullNameController.text.trim(),
+            role: _selectedRole.value,
+            phone: _phoneController.text.trim(),
+            collectionCentreId: _selectedRole == UserRole.collectionStaff
+                ? _selectedCentreId
+                : null,
+            distributorId: _selectedRole == UserRole.distributor
+                ? _selectedDistributorId
+                : null,
+          );
+
       // Refresh user list
       ref.invalidate(adminUsersProvider);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User created successfully!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User created successfully!')),
+        );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -90,14 +101,18 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Temporary Password'),
+                decoration: const InputDecoration(
+                  labelText: 'Temporary Password',
+                ),
                 obscureText: true,
                 validator: (v) => v == null || v.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Phone Number (Optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Phone Number (Optional)',
+                ),
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 16),
@@ -105,11 +120,15 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
                 initialValue: _selectedRole,
                 decoration: const InputDecoration(labelText: 'Role'),
                 items: UserRole.values
-                    .where((r) => r != UserRole.customer) // Can't create customer here
-                    .map((role) => DropdownMenuItem(
-                          value: role,
-                          child: Text(role.value.toUpperCase()),
-                        ))
+                    .where(
+                      (r) => r != UserRole.customer,
+                    ) // Can't create customer here
+                    .map(
+                      (role) => DropdownMenuItem(
+                        value: role,
+                        child: Text(role.value.toUpperCase()),
+                      ),
+                    )
                     .toList(),
                 onChanged: (val) {
                   if (val != null) setState(() => _selectedRole = val);
@@ -117,40 +136,62 @@ class _AdminCreateUserScreenState extends ConsumerState<AdminCreateUserScreen> {
               ),
               if (_selectedRole == UserRole.collectionStaff) ...[
                 const SizedBox(height: 16),
-                ref.watch(activeCentresProvider).when(
-                  data: (centres) => DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: 'Collection Centre'),
-                    items: centres.map((c) => DropdownMenuItem<String>(
-                      value: c['id'] as String,
-                      child: Text(c['name'] as String),
-                    )).toList(),
-                    onChanged: (val) => setState(() => _selectedCentreId = val),
-                    validator: (v) => v == null ? 'Please select a centre' : null,
-                  ),
-                  loading: () => const LinearProgressIndicator(),
-                  error: (e, _) => Text('Error loading centres: $e'),
-                ),
+                ref
+                    .watch(activeCentresProvider)
+                    .when(
+                      data: (centres) => DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Collection Centre',
+                        ),
+                        items: centres
+                            .map(
+                              (c) => DropdownMenuItem<String>(
+                                value: c['id'] as String,
+                                child: Text(c['name'] as String),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _selectedCentreId = val),
+                        validator: (v) =>
+                            v == null ? 'Please select a centre' : null,
+                      ),
+                      loading: () => const LinearProgressIndicator(),
+                      error: (e, _) => Text('Error loading centres: $e'),
+                    ),
               ],
               if (_selectedRole == UserRole.distributor) ...[
                 const SizedBox(height: 16),
-                ref.watch(activeDistributorsProvider).when(
-                  data: (distributors) => DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: 'Distributor Organisation'),
-                    items: distributors.map((d) => DropdownMenuItem<String>(
-                      value: d['id'] as String,
-                      child: Text(d['name'] as String),
-                    )).toList(),
-                    onChanged: (val) => setState(() => _selectedDistributorId = val),
-                    validator: (v) => v == null ? 'Please select an organisation' : null,
-                  ),
-                  loading: () => const LinearProgressIndicator(),
-                  error: (e, _) => Text('Error loading distributors: $e'),
-                ),
+                ref
+                    .watch(activeDistributorsProvider)
+                    .when(
+                      data: (distributors) => DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Distributor Organisation',
+                        ),
+                        items: distributors
+                            .map(
+                              (d) => DropdownMenuItem<String>(
+                                value: d['id'] as String,
+                                child: Text(d['name'] as String),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _selectedDistributorId = val),
+                        validator: (v) =>
+                            v == null ? 'Please select an organisation' : null,
+                      ),
+                      loading: () => const LinearProgressIndicator(),
+                      error: (e, _) => Text('Error loading distributors: $e'),
+                    ),
               ],
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
-                child: _isLoading ? const CircularProgressIndicator() : const Text('Create User'),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Create User'),
               ),
             ],
           ),

@@ -8,17 +8,15 @@ class CollectionFarmsScreen extends ConsumerStatefulWidget {
   const CollectionFarmsScreen({super.key});
 
   @override
-  ConsumerState<CollectionFarmsScreen> createState() => _CollectionFarmsScreenState();
+  ConsumerState<CollectionFarmsScreen> createState() =>
+      _CollectionFarmsScreenState();
 }
 
 class _CollectionFarmsScreenState extends ConsumerState<CollectionFarmsScreen> {
-  String _searchQuery = '';
-  bool? _isActiveFilter;
-
   @override
   Widget build(BuildContext context) {
-    final args = FarmFilterArgs(searchQuery: _searchQuery, isActive: _isActiveFilter);
-    final farmsAsync = ref.watch(paginatedFarmsProvider(args));
+    final filterArgs = ref.watch(farmFilterProvider);
+    final farmsAsync = ref.watch(paginatedFarmsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -32,7 +30,7 @@ class _CollectionFarmsScreenState extends ConsumerState<CollectionFarmsScreen> {
       ),
       body: Column(
         children: [
-          _buildFilters(context),
+          _buildFilters(context, filterArgs),
           Expanded(
             child: farmsAsync.when(
               data: (farms) {
@@ -47,18 +45,28 @@ class _CollectionFarmsScreenState extends ConsumerState<CollectionFarmsScreen> {
                     final farm = farms[index];
                     return Card(
                       child: ListTile(
-                        title: Text('${farm.farmName} (${farm.farmCode})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(
+                          '${farm.farmName} (${farm.farmCode})',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Text('${farm.ownerName} • ${farm.village}'),
                         trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: farm.isActive ? Colors.green.shade100 : Colors.red.shade100,
+                            color: farm.isActive
+                                ? Colors.green.shade100
+                                : Colors.red.shade100,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             farm.isActive ? 'Active' : 'Inactive',
                             style: TextStyle(
-                              color: farm.isActive ? Colors.green.shade800 : Colors.red.shade800,
+                              color: farm.isActive
+                                  ? Colors.green.shade800
+                                  : Colors.red.shade800,
                               fontSize: 12,
                             ),
                           ),
@@ -80,7 +88,7 @@ class _CollectionFarmsScreenState extends ConsumerState<CollectionFarmsScreen> {
     );
   }
 
-  Widget _buildFilters(BuildContext context) {
+  Widget _buildFilters(BuildContext context, FarmFilterArgs filterArgs) {
     return Container(
       color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.all(16.0),
@@ -90,10 +98,13 @@ class _CollectionFarmsScreenState extends ConsumerState<CollectionFarmsScreen> {
             decoration: InputDecoration(
               hintText: 'Search farm, code, owner, or village...',
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+            onChanged: (val) =>
+                ref.read(farmFilterProvider.notifier).updateSearchQuery(val.toLowerCase()),
           ),
           const SizedBox(height: 12),
           SingleChildScrollView(
@@ -101,9 +112,9 @@ class _CollectionFarmsScreenState extends ConsumerState<CollectionFarmsScreen> {
             child: Row(
               children: [
                 DropdownMenu<bool?>(
-                  initialSelection: _isActiveFilter,
+                  initialSelection: filterArgs.isActive,
                   label: const Text('Status'),
-                  onSelected: (val) => setState(() => _isActiveFilter = val),
+                  onSelected: (val) => ref.read(farmFilterProvider.notifier).updateIsActiveFilter(val),
                   dropdownMenuEntries: const [
                     DropdownMenuEntry(value: null, label: 'All Statuses'),
                     DropdownMenuEntry(value: true, label: 'Active'),

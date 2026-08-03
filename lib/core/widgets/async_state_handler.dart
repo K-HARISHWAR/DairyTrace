@@ -25,9 +25,10 @@ class AsyncStateHandler<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return value.when(
       data: (data) {
-        final bool isDataEmpty = isEmpty?.call(data) ?? 
-            (data is List ? (data as List).isEmpty : false) || 
-            (data is Map ? (data as Map).isEmpty : data == null);
+        final bool isDataEmpty =
+            isEmpty?.call(data) ??
+            (data is List ? (data as List).isEmpty : false) ||
+                (data is Map ? (data as Map).isEmpty : data == null);
 
         if (isDataEmpty) {
           if (emptyBuilder != null) return emptyBuilder!();
@@ -53,19 +54,12 @@ class AsyncStateHandler<T> extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              emptyIcon ?? Icons.inbox,
-              size: 64,
-              color: Colors.grey,
-            ),
+            Icon(emptyIcon ?? Icons.inbox, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               emptyMessage ?? 'No data found',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 16),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 24),
@@ -88,28 +82,18 @@ class AsyncStateHandler<T> extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             const Text(
               'Unable to connect or load data.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Text(
               error.toString(),
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 24),

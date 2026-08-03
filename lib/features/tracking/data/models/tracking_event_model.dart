@@ -61,16 +61,16 @@ class TrackingEventModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        batchId,
-        stage,
-        eventType,
-        status,
-        locationName,
-        latitude,
-        longitude,
-        remarks,
-        createdBy,
-        occurredAt,
-      ];
+    id,
+    batchId,
+    stage,
+    eventType,
+    status,
+    locationName,
+    latitude,
+    longitude,
+    remarks,
+    createdBy,
+    occurredAt,
+  ];
 }

@@ -74,19 +74,19 @@ class BatchModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        batchCode,
-        publicToken,
-        farmId,
-        collectionCentreId,
-        quantityLitres,
-        collectionTime,
-        currentStage,
-        overallStatus,
-        qualityStatus,
-        notes,
-        createdBy,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    batchCode,
+    publicToken,
+    farmId,
+    collectionCentreId,
+    quantityLitres,
+    collectionTime,
+    currentStage,
+    overallStatus,
+    qualityStatus,
+    notes,
+    createdBy,
+    createdAt,
+    updatedAt,
+  ];
 }

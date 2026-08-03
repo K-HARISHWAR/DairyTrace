@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +6,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/utils/qr_parser.dart';
 import '../../data/repositories/public_trace_repository.dart';
-import 'public_batch_screen.dart'; // Ensure this uses publicBatchProvider
 
 class PublicScanScreen extends ConsumerStatefulWidget {
   const PublicScanScreen({super.key});
@@ -16,7 +14,8 @@ class PublicScanScreen extends ConsumerStatefulWidget {
   ConsumerState<PublicScanScreen> createState() => _PublicScanScreenState();
 }
 
-class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with WidgetsBindingObserver {
+class _PublicScanScreenState extends ConsumerState<PublicScanScreen>
+    with WidgetsBindingObserver {
   late MobileScannerController _controller;
   bool _isProcessing = false;
   bool _hasPermission = false;
@@ -55,7 +54,8 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
     super.didChangeAppLifecycleState(state);
     if (!_controller.value.isInitialized) return;
 
-    if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
       _controller.stop();
     } else if (state == AppLifecycleState.resumed && _hasPermission) {
       _controller.start();
@@ -72,15 +72,17 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
 
   Future<void> _processToken(String token) async {
     setState(() => _isProcessing = true);
-    
+
     // Pause scanner
     await _controller.stop();
 
     try {
-      final data = await ref.read(publicTraceRepositoryProvider).getPublicBatchTrace(token);
-      
+      final data = await ref
+          .read(publicTraceRepositoryProvider)
+          .getPublicBatchTrace(token);
+
       if (!mounted) return;
-      
+
       if (data == null) {
         _showError('Batch not found or unavailable.');
         await _controller.start();
@@ -110,7 +112,7 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
 
   void _onDetect(BarcodeCapture capture) async {
     if (_isProcessing) return;
-    
+
     final List<Barcode> barcodes = capture.barcodes;
     for (final barcode in barcodes) {
       final String? rawValue = barcode.rawValue;
@@ -122,7 +124,7 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
         } else {
           // It's a non-DairyTrace QR or malformed
           if (!_isProcessing) {
-             // Only show error if we aren't already processing something
+            // Only show error if we aren't already processing something
             _showError('Invalid or unrecognized QR code.');
             // We don't set isProcessing here so they can keep scanning
           }
@@ -168,38 +170,7 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan QR Code'),
-        actions: [
-          if (_hasPermission) ...[
-            IconButton(
-              icon: ValueListenableBuilder(
-                valueListenable: _controller.torchState,
-                builder: (context, state, child) {
-                  switch (state) {
-                    case TorchState.off:
-                      return const Icon(Icons.flash_off);
-                    case TorchState.on:
-                      return const Icon(Icons.flash_on);
-                  }
-                },
-              ),
-              onPressed: () => _controller.toggleTorch(),
-            ),
-            IconButton(
-              icon: ValueListenableBuilder(
-                valueListenable: _controller.cameraFacingState,
-                builder: (context, state, child) {
-                  switch (state) {
-                    case CameraFacing.front:
-                      return const Icon(Icons.camera_front);
-                    case CameraFacing.back:
-                      return const Icon(Icons.camera_rear);
-                  }
-                },
-              ),
-              onPressed: () => _controller.switchCamera(),
-            ),
-          ]
-        ],
+        // Removed flashlight and camera switch to fix mobile_scanner v7 API changes
       ),
       body: _buildBody(),
     );
@@ -227,7 +198,7 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
             TextButton(
               onPressed: _showManualEntryDialog,
               child: const Text('Manual Entry (Accessibility)'),
-            )
+            ),
           ],
         ),
       );
@@ -239,11 +210,8 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
 
     return Stack(
       children: [
-        MobileScanner(
-          controller: _controller,
-          onDetect: _onDetect,
-        ),
-        
+        MobileScanner(controller: _controller, onDetect: _onDetect),
+
         // Custom Overlay
         Container(
           decoration: ShapeDecoration(
@@ -304,7 +272,10 @@ class _PublicScanScreenState extends ConsumerState<PublicScanScreen> with Widget
                 children: [
                   CircularProgressIndicator(color: Colors.white),
                   SizedBox(height: 16),
-                  Text('Verifying trace...', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  Text(
+                    'Verifying trace...',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -322,7 +293,7 @@ class QrScannerOverlayShape extends ShapeBorder {
   final double borderLength;
   final double cutOutSize;
 
-  QrScannerOverlayShape({
+  const QrScannerOverlayShape({
     this.borderColor = Colors.red,
     this.borderWidth = 3.0,
     this.overlayColor = const Color.fromRGBO(0, 0, 0, 80),
@@ -343,35 +314,25 @@ class QrScannerOverlayShape extends ShapeBorder {
 
   @override
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    Path _getLeftTopPath(Rect rect) {
+    Path getLeftTopPath(Rect rect) {
       return Path()
         ..moveTo(rect.left, rect.bottom)
         ..lineTo(rect.left, rect.top)
         ..lineTo(rect.right, rect.top);
     }
 
-    return _getLeftTopPath(rect)
-      ..lineTo(
-        rect.right,
-        rect.bottom,
-      )
-      ..lineTo(
-        rect.left,
-        rect.bottom,
-      )
-      ..lineTo(
-        rect.left,
-        rect.top,
-      );
+    return getLeftTopPath(rect)
+      ..lineTo(rect.right, rect.bottom)
+      ..lineTo(rect.left, rect.bottom)
+      ..lineTo(rect.left, rect.top);
   }
 
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
     final width = rect.width;
-    final borderWidthSize = width / 2;
     final height = rect.height;
     final borderOffset = borderWidth / 2;
-    final mBorderLength = borderLength > cutOutSize / 2 + borderWidthSize ? cutOutSize / 2 + borderOffset : borderLength;
+
     final mCutOutSize = cutOutSize < width ? cutOutSize : width - borderOffset;
 
     final backgroundPaint = Paint()
@@ -396,28 +357,16 @@ class QrScannerOverlayShape extends ShapeBorder {
     );
 
     canvas
-      ..saveLayer(
-        rect,
-        backgroundPaint,
-      )
-      ..drawRect(
-        rect,
-        backgroundPaint,
-      )
+      ..saveLayer(rect, backgroundPaint)
+      ..drawRect(rect, backgroundPaint)
       ..drawRRect(
-        RRect.fromRectAndRadius(
-          cutOutRect,
-          Radius.circular(borderRadius),
-        ),
+        RRect.fromRectAndRadius(cutOutRect, Radius.circular(borderRadius)),
         boxPaint,
       )
       ..restore();
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        cutOutRect,
-        Radius.circular(borderRadius),
-      ),
+      RRect.fromRectAndRadius(cutOutRect, Radius.circular(borderRadius)),
       borderPaint,
     );
   }

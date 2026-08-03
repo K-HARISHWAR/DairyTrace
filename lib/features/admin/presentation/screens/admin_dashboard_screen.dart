@@ -11,7 +11,8 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
@@ -61,7 +62,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               const SizedBox(height: 24),
               _buildChartsSection(context, theme),
               const SizedBox(height: 24),
-              Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Quick Actions',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 12),
               _buildDashboardGrid(context, theme),
             ],
@@ -73,7 +79,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   Widget _buildKPISection(BuildContext context, ThemeData theme) {
     final statsAsyncValue = ref.watch(adminDashboardStatsProvider);
-    
+
     return statsAsyncValue.when(
       data: (stats) {
         return GridView.count(
@@ -84,23 +90,76 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           childAspectRatio: 1.5,
           physics: const NeverScrollableScrollPhysics(),
           children: [
-            _buildKPICard(theme, 'Active Batches', stats['totalActiveBatches']?.toString() ?? '0', Icons.local_drink),
-            _buildKPICard(theme, 'Collected Today', stats['batchesCollectedToday']?.toString() ?? '0', Icons.today),
-            _buildKPICard(theme, 'Accepted', stats['acceptedBatches']?.toString() ?? '0', Icons.check_circle_outline, color: Colors.green),
-            _buildKPICard(theme, 'Rejected', stats['rejectedBatches']?.toString() ?? '0', Icons.cancel_outlined, color: Colors.red),
-            _buildKPICard(theme, 'In Transit', stats['inTransitDeliveries']?.toString() ?? '0', Icons.local_shipping_outlined),
-            _buildKPICard(theme, 'Delayed', stats['delayedDeliveries']?.toString() ?? '0', Icons.access_time_outlined, color: Colors.orange),
-            _buildKPICard(theme, 'Unresolved Alerts', stats['unresolvedAlerts']?.toString() ?? '0', Icons.warning_amber),
-            _buildKPICard(theme, 'Critical Alerts', stats['highCriticalAlerts']?.toString() ?? '0', Icons.error_outline, color: Colors.red),
+            _buildKPICard(
+              theme,
+              'Active Batches',
+              stats['totalActiveBatches']?.toString() ?? '0',
+              Icons.local_drink,
+            ),
+            _buildKPICard(
+              theme,
+              'Collected Today',
+              stats['batchesCollectedToday']?.toString() ?? '0',
+              Icons.today,
+            ),
+            _buildKPICard(
+              theme,
+              'Accepted',
+              stats['acceptedBatches']?.toString() ?? '0',
+              Icons.check_circle_outline,
+              color: Colors.green,
+            ),
+            _buildKPICard(
+              theme,
+              'Rejected',
+              stats['rejectedBatches']?.toString() ?? '0',
+              Icons.cancel_outlined,
+              color: Colors.red,
+            ),
+            _buildKPICard(
+              theme,
+              'In Transit',
+              stats['inTransitDeliveries']?.toString() ?? '0',
+              Icons.local_shipping_outlined,
+            ),
+            _buildKPICard(
+              theme,
+              'Delayed',
+              stats['delayedDeliveries']?.toString() ?? '0',
+              Icons.access_time_outlined,
+              color: Colors.orange,
+            ),
+            _buildKPICard(
+              theme,
+              'Unresolved Alerts',
+              stats['unresolvedAlerts']?.toString() ?? '0',
+              Icons.warning_amber,
+            ),
+            _buildKPICard(
+              theme,
+              'Critical Alerts',
+              stats['highCriticalAlerts']?.toString() ?? '0',
+              Icons.error_outline,
+              color: Colors.red,
+            ),
           ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Text('Failed to load stats: $error', style: TextStyle(color: theme.colorScheme.error)),
+      error: (error, stack) => Text(
+        'Failed to load stats: $error',
+        style: TextStyle(color: theme.colorScheme.error),
+      ),
     );
   }
 
-  Widget _buildKPICard(ThemeData theme, String title, String value, IconData icon, {Color? color}) {
+  Widget _buildKPICard(
+    ThemeData theme,
+    String title,
+    String value,
+    IconData icon, {
+    Color? color,
+  }) {
     final iconColor = color ?? theme.colorScheme.primary;
     return Card(
       elevation: 0,
@@ -121,7 +180,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 Expanded(
                   child: Text(
                     title,
-                    style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -160,11 +221,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Batch Status Overview', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Batch Status Overview',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   statsAsync.when(
                     data: (stats) => DashboardStatusDoughnut(stats: stats),
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Text('Error: $e'),
                   ),
                 ],
@@ -186,11 +253,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('7-Day Collection Volume', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    '7-Day Collection Volume',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   volumeAsync.when(
                     data: (data) => DashboardVolumeChart(data: data),
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Text('Error: $e'),
                   ),
                 ],
@@ -242,14 +315,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildDashboardCard(BuildContext context, {
+  Widget _buildDashboardCard(
+    BuildContext context, {
     required String title,
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
-    
+
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,

@@ -1,6 +1,12 @@
 class SupabaseConfig {
-  static const String url = String.fromEnvironment('SUPABASE_URL', defaultValue: 'https://fvjmkdvkmdyugnqgerib.supabase.co');
-  static const String publishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY', defaultValue: 'sb_publishable_LiS3DEGFzotBdmjgxTxEPA_ZSXh3iJH');
+  static const String url = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://fvjmkdvkmdyugnqgerib.supabase.co',
+  );
+  static const String publishableKey = String.fromEnvironment(
+    'SUPABASE_PUBLISHABLE_KEY',
+    defaultValue: 'sb_publishable_LiS3DEGFzotBdmjgxTxEPA_ZSXh3iJH',
+  );
 
   static void validate() {
     if (url.isEmpty || publishableKey.isEmpty) {

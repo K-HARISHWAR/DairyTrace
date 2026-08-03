@@ -17,9 +17,12 @@ class TimelineEvent {
   factory TimelineEvent.fromMap(Map<String, dynamic> event) {
     return TimelineEvent(
       stage: event['stage']?.toString() ?? 'Unknown',
-      occurredAt: event['occurred_at'] != null ? DateTime.tryParse(event['occurred_at'].toString())?.toLocal() : null,
+      occurredAt: event['occurred_at'] != null
+          ? DateTime.tryParse(event['occurred_at'].toString())?.toLocal()
+          : null,
       locationName: event['location_name']?.toString(),
-      remarks: event['public_remarks']?.toString() ?? event['remarks']?.toString(),
+      remarks:
+          event['public_remarks']?.toString() ?? event['remarks']?.toString(),
     );
   }
 }
@@ -48,8 +51,8 @@ class JourneyTimeline extends StatelessWidget {
         final event = events[index];
         final isFirst = index == 0;
         final isLast = index == events.length - 1;
-        
-        final dateStr = event.occurredAt != null 
+
+        final dateStr = event.occurredAt != null
             ? dateFormat.format(event.occurredAt!)
             : '';
 
@@ -65,7 +68,9 @@ class JourneyTimeline extends StatelessWidget {
                     Container(
                       width: 2,
                       height: 20,
-                      color: isFirst ? Colors.transparent : Colors.blue.shade200,
+                      color: isFirst
+                          ? Colors.transparent
+                          : Colors.blue.shade200,
                     ),
                     Container(
                       width: 12,
@@ -79,7 +84,9 @@ class JourneyTimeline extends StatelessWidget {
                     Expanded(
                       child: Container(
                         width: 2,
-                        color: isLast ? Colors.transparent : Colors.blue.shade200,
+                        color: isLast
+                            ? Colors.transparent
+                            : Colors.blue.shade200,
                       ),
                     ),
                   ],
@@ -98,26 +105,40 @@ class JourneyTimeline extends StatelessWidget {
                           Expanded(
                             child: Text(
                               _formatStage(event.stage),
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
                           Text(
                             dateStr,
-                            style: const TextStyle(color: Colors.black54, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
-                      if (event.locationName != null && event.locationName!.isNotEmpty)
+                      if (event.locationName != null &&
+                          event.locationName!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Row(
                             children: [
-                              const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                              const Icon(
+                                Icons.location_on,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   event.locationName!,
-                                  style: const TextStyle(color: Colors.black87, fontSize: 13),
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],
@@ -135,7 +156,11 @@ class JourneyTimeline extends StatelessWidget {
                             ),
                             child: Text(
                               event.remarks!,
-                              style: const TextStyle(color: Colors.black87, fontSize: 13, fontStyle: FontStyle.italic),
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 13,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
                           ),
                         ),
@@ -152,6 +177,13 @@ class JourneyTimeline extends StatelessWidget {
 
   String _formatStage(String stage) {
     if (stage.isEmpty) return 'Unknown';
-    return stage.split('_').map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '').join(' ');
+    return stage
+        .split('_')
+        .map(
+          (word) => word.isNotEmpty
+              ? '${word[0].toUpperCase()}${word.substring(1)}'
+              : '',
+        )
+        .join(' ');
   }
 }

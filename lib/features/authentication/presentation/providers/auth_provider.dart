@@ -5,7 +5,7 @@ import '../../data/repositories/auth_repository.dart';
 
 class AuthNotifier extends AsyncNotifier<ProfileModel?> {
   @override
-  FutureOr<ProfileModel?> build() async {
+  Future<ProfileModel?> build() async {
     return _fetchUser();
   }
 
@@ -26,7 +26,9 @@ class AuthNotifier extends AsyncNotifier<ProfileModel?> {
   Future<void> signIn(String email, String password) async {
     state = const AsyncLoading();
     try {
-      final user = await ref.read(authRepositoryProvider).signIn(email, password);
+      final user = await ref
+          .read(authRepositoryProvider)
+          .signIn(email, password);
       state = AsyncData(user);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -44,4 +46,6 @@ class AuthNotifier extends AsyncNotifier<ProfileModel?> {
   }
 }
 
-final authStateProvider = AsyncNotifierProvider<AuthNotifier, ProfileModel?>(AuthNotifier.new);
+final authStateProvider = AsyncNotifierProvider<AuthNotifier, ProfileModel?>(
+  AuthNotifier.new,
+);

@@ -12,10 +12,11 @@ class PublicTraceRepository {
   PublicTraceRepository(this._client);
 
   Future<Map<String, dynamic>?> getPublicBatchTrace(String publicToken) async {
-    final response = await _client.rpc('get_public_batch_trace', params: {
-      'p_public_token': publicToken,
-    });
-    
+    final response = await _client.rpc(
+      'get_public_batch_trace',
+      params: {'p_public_token': publicToken},
+    );
+
     if (response == null) return null;
     return response as Map<String, dynamic>;
   }

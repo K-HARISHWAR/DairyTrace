@@ -34,7 +34,8 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
   @override
   void didUpdateWidget(SearchAndFilterBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialQuery != oldWidget.initialQuery && widget.initialQuery != _controller.text) {
+    if (widget.initialQuery != oldWidget.initialQuery &&
+        widget.initialQuery != _controller.text) {
       _controller.text = widget.initialQuery;
     }
   }
@@ -75,13 +76,18 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                         },
                       )
                     : null,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceVariant.withOpacity(0.5),
               ),
             ),
           ),
@@ -92,11 +98,15 @@ class _SearchAndFilterBarState extends State<SearchAndFilterBar> {
                 onPressed: widget.onFilterTap,
                 icon: const Icon(Icons.tune),
                 style: IconButton.styleFrom(
-                  backgroundColor: widget.activeFilterCount > 0 
+                  backgroundColor: widget.activeFilterCount > 0
                       ? Theme.of(context).primaryColor.withOpacity(0.1)
-                      : Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                      : Theme.of(
+                          context,
+                        ).colorScheme.surfaceVariant.withOpacity(0.5),
                   padding: const EdgeInsets.all(12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               if (widget.activeFilterCount > 0)

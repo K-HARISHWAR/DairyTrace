@@ -11,10 +11,12 @@ class CollectionCreateBatchScreen extends ConsumerStatefulWidget {
   const CollectionCreateBatchScreen({super.key});
 
   @override
-  ConsumerState<CollectionCreateBatchScreen> createState() => _CollectionCreateBatchScreenState();
+  ConsumerState<CollectionCreateBatchScreen> createState() =>
+      _CollectionCreateBatchScreenState();
 }
 
-class _CollectionCreateBatchScreenState extends ConsumerState<CollectionCreateBatchScreen> {
+class _CollectionCreateBatchScreenState
+    extends ConsumerState<CollectionCreateBatchScreen> {
   int _currentStep = 0;
   bool _isLoading = false;
 
@@ -47,35 +49,52 @@ class _CollectionCreateBatchScreenState extends ConsumerState<CollectionCreateBa
     final user = ref.read(authStateProvider).value;
     if (user?.collectionCentreId == null) return;
 
-    if (_selectedFarm == null || _quantityController.text.isEmpty || _fatController.text.isEmpty || _snfController.text.isEmpty || _tempController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all required fields in previous steps.')));
+    if (_selectedFarm == null ||
+        _quantityController.text.isEmpty ||
+        _fatController.text.isEmpty ||
+        _snfController.text.isEmpty ||
+        _tempController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all required fields in previous steps.'),
+        ),
+      );
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final batch = await ref.read(batchRepositoryProvider).createBatchTransaction(
-        farmId: _selectedFarm!.id,
-        collectionCentreId: user!.collectionCentreId!,
-        quantityLitres: double.parse(_quantityController.text),
-        collectionTime: DateTime.now(),
-        fatPercentage: double.parse(_fatController.text),
-        snfPercentage: double.parse(_snfController.text),
-        temperature: double.parse(_tempController.text),
-        purityPassed: _purityPassed,
-        qualityRemarks: _qualityRemarksController.text.trim(),
-        notes: _notesController.text.trim(),
-      );
+      final batch = await ref
+          .read(batchRepositoryProvider)
+          .createBatchTransaction(
+            farmId: _selectedFarm!.id,
+            collectionCentreId: user!.collectionCentreId!,
+            quantityLitres: double.parse(_quantityController.text),
+            collectionTime: DateTime.now(),
+            fatPercentage: double.parse(_fatController.text),
+            snfPercentage: double.parse(_snfController.text),
+            temperature: double.parse(_tempController.text),
+            purityPassed: _purityPassed,
+            qualityRemarks: _qualityRemarksController.text.trim(),
+            notes: _notesController.text.trim(),
+          );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Batch registered successfully!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Batch registered successfully!')),
+        );
         // Navigate to details and replace so user can't hit back to form
-        context.pushReplacementNamed(RouteNames.collectionBatchDetails, extra: batch);
+        context.pushReplacementNamed(
+          RouteNames.collectionBatchDetails,
+          extra: batch,
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -132,23 +151,33 @@ class _CollectionCreateBatchScreenState extends ConsumerState<CollectionCreateBa
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ref.watch(activeFarmsDropdownProvider).when(
-          data: (farms) => DropdownButtonFormField<FarmModel>(
-            value: _selectedFarm,
-            decoration: const InputDecoration(labelText: 'Select Farm *'),
-            items: farms.map((f) => DropdownMenuItem(
-              value: f,
-              child: Text('${f.farmName} (${f.farmCode}) - ${f.ownerName}'),
-            )).toList(),
-            onChanged: (val) => setState(() => _selectedFarm = val),
-          ),
-          loading: () => const LinearProgressIndicator(),
-          error: (e, _) => Text('Error loading farms: $e'),
-        ),
+        ref
+            .watch(activeFarmsDropdownProvider)
+            .when(
+              data: (farms) => DropdownButtonFormField<FarmModel>(
+                value: _selectedFarm,
+                decoration: const InputDecoration(labelText: 'Select Farm *'),
+                items: farms
+                    .map(
+                      (f) => DropdownMenuItem(
+                        value: f,
+                        child: Text(
+                          '${f.farmName} (${f.farmCode}) - ${f.ownerName}',
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (val) => setState(() => _selectedFarm = val),
+              ),
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('Error loading farms: $e'),
+            ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _notesController,
-          decoration: const InputDecoration(labelText: 'Collection Notes (Optional)'),
+          decoration: const InputDecoration(
+            labelText: 'Collection Notes (Optional)',
+          ),
           maxLines: 2,
         ),
       ],
@@ -169,23 +198,36 @@ class _CollectionCreateBatchScreenState extends ConsumerState<CollectionCreateBa
   Widget _buildQualityStep() {
     return Column(
       children: [
-        const Text('Initial Quality Check (Triggers DB Evaluation)', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          'Initial Quality Check (Triggers DB Evaluation)',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: TextFormField(
                 controller: _fatController,
-                decoration: const InputDecoration(labelText: 'Fat % *', suffixText: '%'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Fat % *',
+                  suffixText: '%',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: TextFormField(
                 controller: _snfController,
-                decoration: const InputDecoration(labelText: 'SNF % *', suffixText: '%'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'SNF % *',
+                  suffixText: '%',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
             ),
           ],
@@ -193,7 +235,10 @@ class _CollectionCreateBatchScreenState extends ConsumerState<CollectionCreateBa
         const SizedBox(height: 16),
         TextFormField(
           controller: _tempController,
-          decoration: const InputDecoration(labelText: 'Temperature (°C) *', suffixText: '°C'),
+          decoration: const InputDecoration(
+            labelText: 'Temperature (°C) *',
+            suffixText: '°C',
+          ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
         ),
         const SizedBox(height: 16),
@@ -206,28 +251,33 @@ class _CollectionCreateBatchScreenState extends ConsumerState<CollectionCreateBa
         const SizedBox(height: 8),
         TextFormField(
           controller: _qualityRemarksController,
-          decoration: const InputDecoration(labelText: 'Quality Remarks (Optional)'),
+          decoration: const InputDecoration(
+            labelText: 'Quality Remarks (Optional)',
+          ),
         ),
       ],
     );
   }
 
   Widget _buildReviewStep() {
-    return _isLoading 
-      ? const Center(child: CircularProgressIndicator())
-      : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Please review the details before submitting. Once submitted, the batch is finalized and quality will be evaluated by the database.', style: TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            _buildReviewRow('Farm', _selectedFarm?.farmName ?? 'None'),
-            _buildReviewRow('Quantity', '${_quantityController.text} L'),
-            _buildReviewRow('Fat', '${_fatController.text}%'),
-            _buildReviewRow('SNF', '${_snfController.text}%'),
-            _buildReviewRow('Temp', '${_tempController.text}°C'),
-            _buildReviewRow('Purity', _purityPassed ? 'Passed' : 'Failed'),
-          ],
-        );
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Please review the details before submitting. Once submitted, the batch is finalized and quality will be evaluated by the database.',
+                style: TextStyle(color: Colors.red),
+              ),
+              const SizedBox(height: 16),
+              _buildReviewRow('Farm', _selectedFarm?.farmName ?? 'None'),
+              _buildReviewRow('Quantity', '${_quantityController.text} L'),
+              _buildReviewRow('Fat', '${_fatController.text}%'),
+              _buildReviewRow('SNF', '${_snfController.text}%'),
+              _buildReviewRow('Temp', '${_tempController.text}°C'),
+              _buildReviewRow('Purity', _purityPassed ? 'Passed' : 'Failed'),
+            ],
+          );
   }
 
   Widget _buildReviewRow(String label, String value) {

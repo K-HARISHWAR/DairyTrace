@@ -11,18 +11,16 @@ class CollectionBatchesScreen extends ConsumerStatefulWidget {
   const CollectionBatchesScreen({super.key});
 
   @override
-  ConsumerState<CollectionBatchesScreen> createState() => _CollectionBatchesScreenState();
+  ConsumerState<CollectionBatchesScreen> createState() =>
+      _CollectionBatchesScreenState();
 }
 
-class _CollectionBatchesScreenState extends ConsumerState<CollectionBatchesScreen> {
-  String _searchQuery = '';
-  BatchStage? _stageFilter;
-  BatchStatus? _statusFilter;
-
+class _CollectionBatchesScreenState
+    extends ConsumerState<CollectionBatchesScreen> {
   @override
   Widget build(BuildContext context) {
-    final args = BatchFilterArgs(searchQuery: _searchQuery, stageFilter: _stageFilter, statusFilter: _statusFilter);
-    final batchesAsync = ref.watch(paginatedBatchesProvider(args));
+    final filterArgs = ref.watch(batchFilterProvider);
+    final batchesAsync = ref.watch(paginatedBatchesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -30,13 +28,14 @@ class _CollectionBatchesScreenState extends ConsumerState<CollectionBatchesScree
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.pushNamed(RouteNames.collectionCreateBatch),
+            onPressed: () =>
+                context.pushNamed(RouteNames.collectionCreateBatch),
           ),
         ],
       ),
       body: Column(
         children: [
-          _buildFilters(context),
+          _buildFilters(context, filterArgs),
           Expanded(
             child: batchesAsync.when(
               data: (batches) {
@@ -51,29 +50,56 @@ class _CollectionBatchesScreenState extends ConsumerState<CollectionBatchesScree
                     final batch = batches[index];
                     return Card(
                       child: InkWell(
-                        onTap: () => context.pushNamed(RouteNames.collectionBatchDetails, extra: batch),
+                        onTap: () => context.pushNamed(
+                          RouteNames.collectionBatchDetails,
+                          extra: batch,
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(batch.batchCode, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  Text('${batch.quantityLitres} L', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                                  Text(
+                                    batch.batchCode,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${batch.quantityLitres} L',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Text('Collected: ${DateFormat('dd MMM yyyy, HH:mm').format(batch.collectionTime)}'),
+                              Text(
+                                'Collected: ${DateFormat('dd MMM yyyy, HH:mm').format(batch.collectionTime)}',
+                              ),
                               const SizedBox(height: 12),
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
                                 children: [
-                                  _buildChip(batch.currentStage.value.toUpperCase(), Colors.purple),
-                                  _buildChip(batch.qualityStatus.value.toUpperCase(), _getQualityColor(batch.qualityStatus.value)),
-                                  _buildChip(batch.overallStatus.value.toUpperCase(), _getStatusColor(batch.overallStatus)),
+                                  _buildChip(
+                                    batch.currentStage.value.toUpperCase(),
+                                    Colors.purple,
+                                  ),
+                                  _buildChip(
+                                    batch.qualityStatus.value.toUpperCase(),
+                                    _getQualityColor(batch.qualityStatus.value),
+                                  ),
+                                  _buildChip(
+                                    batch.overallStatus.value.toUpperCase(),
+                                    _getStatusColor(batch.overallStatus),
+                                  ),
                                 ],
                               ),
                             ],
@@ -101,7 +127,14 @@ class _CollectionBatchesScreenState extends ConsumerState<CollectionBatchesScree
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.5)),
       ),
-      child: Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -124,7 +157,7 @@ class _CollectionBatchesScreenState extends ConsumerState<CollectionBatchesScree
     }
   }
 
-  Widget _buildFilters(BuildContext context) {
+  Widget _buildFilters(BuildContext context, BatchFilterArgs filterArgs) {
     return Container(
       color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.all(16.0),
@@ -134,10 +167,12 @@ class _CollectionBatchesScreenState extends ConsumerState<CollectionBatchesScree
             decoration: InputDecoration(
               hintText: 'Search batch code...',
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            onChanged: (val) => setState(() => _searchQuery = val),
+            onChanged: (val) => ref.read(batchFilterProvider.notifier).updateSearchQuery(val),
           ),
           const SizedBox(height: 12),
           SingleChildScrollView(
@@ -145,22 +180,26 @@ class _CollectionBatchesScreenState extends ConsumerState<CollectionBatchesScree
             child: Row(
               children: [
                 DropdownMenu<BatchStage?>(
-                  initialSelection: _stageFilter,
+                  initialSelection: filterArgs.stageFilter,
                   label: const Text('Stage'),
-                  onSelected: (val) => setState(() => _stageFilter = val),
+                  onSelected: (val) => ref.read(batchFilterProvider.notifier).updateStageFilter(val),
                   dropdownMenuEntries: [
                     const DropdownMenuEntry(value: null, label: 'All Stages'),
-                    ...BatchStage.values.map((e) => DropdownMenuEntry(value: e, label: e.value)),
+                    ...BatchStage.values.map(
+                      (e) => DropdownMenuEntry(value: e, label: e.value),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 12),
                 DropdownMenu<BatchStatus?>(
-                  initialSelection: _statusFilter,
+                  initialSelection: filterArgs.statusFilter,
                   label: const Text('Status'),
-                  onSelected: (val) => setState(() => _statusFilter = val),
+                  onSelected: (val) => ref.read(batchFilterProvider.notifier).updateStatusFilter(val),
                   dropdownMenuEntries: [
                     const DropdownMenuEntry(value: null, label: 'All Statuses'),
-                    ...BatchStatus.values.map((e) => DropdownMenuEntry(value: e, label: e.value)),
+                    ...BatchStatus.values.map(
+                      (e) => DropdownMenuEntry(value: e, label: e.value),
+                    ),
                   ],
                 ),
               ],

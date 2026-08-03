@@ -1,17 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../core/constants/database_tables.dart';
 import '../../../../core/services/supabase_service.dart';
 import '../../../../core/utils/repository_helper.dart';
 
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
-  return ReportRepository(ref.watch(supabaseServiceProvider).client);
+  return ReportRepository();
 });
 
 class ReportRepository with RepositoryHelper {
-  final SupabaseClient _client;
-
-  ReportRepository(this._client);
+  ReportRepository();
 
   Future<List<Map<String, dynamic>>> getDailyVolume(int days) async {
     return executeDb(() async {

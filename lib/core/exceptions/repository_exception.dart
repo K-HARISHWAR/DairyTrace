@@ -6,11 +6,12 @@ class RepositoryException implements Exception {
   RepositoryException(this.message, {this.code, this.originalError});
 
   @override
-  String toString() => 'RepositoryException: $message ${code != null ? "($code)" : ""}';
+  String toString() =>
+      'RepositoryException: $message ${code != null ? "($code)" : ""}';
 }
 
-class AuthException extends RepositoryException {
-  AuthException(super.message, {super.code, super.originalError});
+class AppAuthException extends RepositoryException {
+  AppAuthException(super.message, {super.code, super.originalError});
 }
 
 class NetworkException extends RepositoryException {

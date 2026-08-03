@@ -39,7 +39,10 @@ class BatchFilterArgs {
           statusFilter == other.statusFilter;
 
   @override
-  int get hashCode => searchQuery.hashCode ^ (stageFilter?.hashCode ?? 0) ^ (statusFilter?.hashCode ?? 0);
+  int get hashCode =>
+      searchQuery.hashCode ^
+      (stageFilter?.hashCode ?? 0) ^
+      (statusFilter?.hashCode ?? 0);
 }
 
 // Notifier for preserving filters
@@ -60,10 +63,14 @@ class BatchFilterNotifier extends Notifier<BatchFilterArgs> {
   }
 }
 
-final batchFilterProvider = NotifierProvider<BatchFilterNotifier, BatchFilterArgs>(BatchFilterNotifier.new);
+final batchFilterProvider =
+    NotifierProvider<BatchFilterNotifier, BatchFilterArgs>(
+      BatchFilterNotifier.new,
+    );
 
 // AsyncNotifier for fetching data based on filters
-class PaginatedBatchesNotifier extends AutoDisposeAsyncNotifier<List<BatchModel>> {
+class PaginatedBatchesNotifier
+    extends AsyncNotifier<List<BatchModel>> {
   int _page = 1;
   bool _hasMore = true;
   bool _isLoadingMore = false;
@@ -82,7 +89,7 @@ class PaginatedBatchesNotifier extends AutoDisposeAsyncNotifier<List<BatchModel>
   Future<List<BatchModel>> _fetchBatches({required int page}) async {
     final args = ref.watch(batchFilterProvider);
     final user = ref.watch(authStateProvider).value;
-    
+
     if (user == null || user.collectionCentreId == null) return [];
 
     final repository = ref.watch(batchRepositoryProvider);
@@ -94,16 +101,16 @@ class PaginatedBatchesNotifier extends AutoDisposeAsyncNotifier<List<BatchModel>
       page: page,
       pageSize: _pageSize,
     );
-    
+
     _hasMore = results.length == _pageSize;
     return results;
   }
 
   Future<void> loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     _isLoadingMore = true;
-    
+
     try {
       final nextBatches = await _fetchBatches(page: _page + 1);
       if (nextBatches.isNotEmpty) {
@@ -132,4 +139,8 @@ class PaginatedBatchesNotifier extends AutoDisposeAsyncNotifier<List<BatchModel>
   }
 }
 
-final paginatedBatchesProvider = AutoDisposeAsyncNotifierProvider<PaginatedBatchesNotifier, List<BatchModel>>(PaginatedBatchesNotifier.new);
+final paginatedBatchesProvider =
+    AsyncNotifierProvider.autoDispose<
+      PaginatedBatchesNotifier,
+      List<BatchModel>
+    >(PaginatedBatchesNotifier.new);
