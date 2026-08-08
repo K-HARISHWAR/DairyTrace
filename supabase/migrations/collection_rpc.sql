@@ -23,7 +23,7 @@ BEGIN
     'acceptedCount', (SELECT count(*) FROM batches WHERE collection_centre_id = p_centre_id AND overall_status IN ('accepted', 'in_progress', 'delivered')),
     'rejectedCount', (SELECT count(*) FROM batches WHERE collection_centre_id = p_centre_id AND overall_status = 'rejected'),
     'pendingQualityCount', (SELECT count(*) FROM batches WHERE collection_centre_id = p_centre_id AND quality_status = 'pending'),
-    'unresolvedAlerts', (SELECT count(*) FROM alerts a JOIN batches b ON a.batch_id = b.id WHERE b.collection_centre_id = p_centre_id AND a.status = 'unresolved')
+    'unresolvedAlerts', (SELECT count(*) FROM alerts a JOIN batches b ON a.batch_id = b.id WHERE b.collection_centre_id = p_centre_id AND a.is_resolved = false)
   ) INTO v_stats;
 
   RETURN v_stats;

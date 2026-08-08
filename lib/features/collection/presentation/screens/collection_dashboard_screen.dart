@@ -5,6 +5,8 @@ import '../../../../app/router/route_names.dart';
 import '../../../authentication/presentation/providers/auth_provider.dart';
 import '../providers/collection_dashboard_provider.dart';
 import '../../../../core/services/local_notification_service.dart';
+import '../../../../core/enums/batch_status.dart';
+import '../providers/collection_batches_provider.dart';
 
 class CollectionDashboardScreen extends ConsumerStatefulWidget {
   const CollectionDashboardScreen({super.key});
@@ -102,7 +104,10 @@ class _CollectionDashboardScreenState
                     title: 'Quality Checks',
                     icon: Icons.fact_check_outlined,
                     color: Colors.orange,
-                    onTap: () {},
+                    onTap: () {
+                      ref.read(batchFilterProvider.notifier).updateStatusFilter(BatchStatus.pendingQuality);
+                      context.pushNamed(RouteNames.collectionBatches);
+                    },
                   ),
                   _buildDashboardCard(
                     context,

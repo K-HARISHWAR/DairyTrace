@@ -21,6 +21,9 @@ class CollectionBatchDetailsScreen extends ConsumerWidget {
           title: Text(batch.batchCode),
           bottom: const TabBar(
             isScrollable: true,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
             tabs: [
               Tab(text: 'Overview'),
               Tab(text: 'Quality'),

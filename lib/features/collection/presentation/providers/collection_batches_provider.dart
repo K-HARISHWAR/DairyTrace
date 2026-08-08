@@ -51,15 +51,27 @@ class BatchFilterNotifier extends Notifier<BatchFilterArgs> {
   BatchFilterArgs build() => const BatchFilterArgs();
 
   void updateSearchQuery(String query) {
-    state = state.copyWith(searchQuery: query);
+    state = BatchFilterArgs(
+      searchQuery: query,
+      stageFilter: state.stageFilter,
+      statusFilter: state.statusFilter,
+    );
   }
 
   void updateStageFilter(BatchStage? stage) {
-    state = state.copyWith(stageFilter: stage);
+    state = BatchFilterArgs(
+      searchQuery: state.searchQuery,
+      stageFilter: stage,
+      statusFilter: state.statusFilter,
+    );
   }
 
   void updateStatusFilter(BatchStatus? status) {
-    state = state.copyWith(statusFilter: status);
+    state = BatchFilterArgs(
+      searchQuery: state.searchQuery,
+      stageFilter: state.stageFilter,
+      statusFilter: status,
+    );
   }
 }
 
@@ -83,11 +95,11 @@ class PaginatedBatchesNotifier
   Future<List<BatchModel>> build() async {
     _page = 1;
     _hasMore = true;
-    return _fetchBatches(page: 1);
+    final args = ref.watch(batchFilterProvider);
+    return _fetchBatches(page: 1, args: args);
   }
 
-  Future<List<BatchModel>> _fetchBatches({required int page}) async {
-    final args = ref.watch(batchFilterProvider);
+  Future<List<BatchModel>> _fetchBatches({required int page, required BatchFilterArgs args}) async {
     final user = ref.watch(authStateProvider).value;
 
     if (user == null || user.collectionCentreId == null) return [];
@@ -110,9 +122,10 @@ class PaginatedBatchesNotifier
     if (_isLoadingMore || !_hasMore) return;
 
     _isLoadingMore = true;
+    final args = ref.read(batchFilterProvider);
 
     try {
-      final nextBatches = await _fetchBatches(page: _page + 1);
+      final nextBatches = await _fetchBatches(page: _page + 1, args: args);
       if (nextBatches.isNotEmpty) {
         _page++;
         final currentData = state.value ?? [];
@@ -130,8 +143,9 @@ class PaginatedBatchesNotifier
     state = const AsyncLoading();
     _page = 1;
     _hasMore = true;
+    final args = ref.read(batchFilterProvider);
     try {
-      final batches = await _fetchBatches(page: 1);
+      final batches = await _fetchBatches(page: 1, args: args);
       state = AsyncData(batches);
     } catch (e, st) {
       state = AsyncError(e, st);

@@ -24,7 +24,7 @@ class BatchRepository with RepositoryHelper {
       var query = _client
           .from(DatabaseTables.batches)
           .select(
-            'id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at',
+            'id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_by, created_at, updated_at',
           );
 
       if (collectionCentreId != null) {
@@ -51,7 +51,7 @@ class BatchRepository with RepositoryHelper {
       var query = _client
           .from(DatabaseTables.batches)
           .select(
-            'id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_at, updated_at',
+            'id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_by, created_at, updated_at',
           )
           .eq('collection_centre_id', collectionCentreId);
 
@@ -150,9 +150,9 @@ class BatchRepository with RepositoryHelper {
       'checkpoint': 'collection',
       'fat_percentage': fatPercentage,
       'snf_percentage': snfPercentage,
-      'temperature_celsius': temperature,
+      'temperature_c': temperature,
       'purity_passed': purityPassed,
-      'checker_id': userId,
+      'checked_by': userId,
       'remarks': qualityRemarks,
     });
 
