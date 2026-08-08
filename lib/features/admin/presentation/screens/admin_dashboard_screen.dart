@@ -302,14 +302,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           title: 'All Batches',
           icon: Icons.local_drink_outlined,
           color: theme.colorScheme.secondary,
-          onTap: () {},
+          onTap: () => context.pushNamed(RouteNames.adminBatches),
         ),
         _buildDashboardCard(
           context,
           title: 'Farms & Centers',
           icon: Icons.agriculture_outlined,
           color: theme.colorScheme.tertiary,
-          onTap: () {},
+          onTap: () => context.pushNamed(RouteNames.adminFarms),
         ),
       ],
     );

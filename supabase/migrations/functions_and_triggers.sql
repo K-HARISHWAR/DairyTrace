@@ -130,7 +130,8 @@ CREATE TRIGGER evaluate_quality_trigger BEFORE INSERT ON quality_checks FOR EACH
 
 -- After quality check trigger to update batch status and create tracking event/alerts
 CREATE OR REPLACE FUNCTION process_quality_check_after()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
     new_overall_status TEXT;
     new_quality_status TEXT;
@@ -182,7 +183,7 @@ BEGIN
             'Batch failed quality standards during ' || NEW.checkpoint || ' stage.', 
             'critical', 
             'quality_failure_' || NEW.batch_id
-        ) ON CONFLICT (deduplication_key) DO NOTHING;
+        ) ON CONFLICT (deduplication_key) WHERE is_resolved = false AND deduplication_key IS NOT NULL DO NOTHING;
     END IF;
 
     IF NEW.evaluated_result = 'warning' THEN
@@ -194,11 +195,11 @@ BEGIN
             'Batch temperature exceeded recommended limits.', 
             'medium', 
             'temp_warning_' || NEW.batch_id
-        ) ON CONFLICT (deduplication_key) DO NOTHING;
+        ) ON CONFLICT (deduplication_key) WHERE is_resolved = false AND deduplication_key IS NOT NULL DO NOTHING;
     END IF;
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CREATE TRIGGER after_quality_check AFTER INSERT ON quality_checks FOR EACH ROW EXECUTE FUNCTION process_quality_check_after();

@@ -25,7 +25,7 @@ class FarmRepository {
   }
 
   Future<List<FarmModel>> getFarmsPaginated({
-    required String collectionCentreId,
+    String? collectionCentreId,
     String? searchQuery,
     bool? isActive,
     int page = 1,
@@ -33,8 +33,11 @@ class FarmRepository {
   }) async {
     var query = _client
         .from(DatabaseTables.farms)
-        .select()
-        .eq('collection_centre_id', collectionCentreId);
+        .select();
+
+    if (collectionCentreId != null) {
+      query = query.eq('collection_centre_id', collectionCentreId);
+    }
 
     if (searchQuery != null && searchQuery.isNotEmpty) {
       query = query.or(

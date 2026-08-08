@@ -98,7 +98,7 @@ BEGIN
     );
   END IF;
 
-  SELECT row_to_json(d) INTO v_delivery FROM deliveries d WHERE id = p_delivery_id;
+  SELECT * INTO v_delivery FROM deliveries WHERE id = p_delivery_id;
   RETURN to_jsonb(v_delivery);
 END;
 $$;

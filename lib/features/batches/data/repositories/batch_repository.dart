@@ -40,7 +40,7 @@ class BatchRepository with RepositoryHelper {
   }
 
   Future<List<BatchModel>> getBatchesPaginated({
-    required String collectionCentreId,
+    String? collectionCentreId,
     String? searchQuery,
     BatchStage? stageFilter,
     BatchStatus? statusFilter,
@@ -52,8 +52,11 @@ class BatchRepository with RepositoryHelper {
           .from(DatabaseTables.batches)
           .select(
             'id, batch_code, public_token, farm_id, collection_centre_id, quantity_litres, collection_time, current_stage, overall_status, quality_status, created_by, created_at, updated_at',
-          )
-          .eq('collection_centre_id', collectionCentreId);
+          );
+
+      if (collectionCentreId != null) {
+        query = query.eq('collection_centre_id', collectionCentreId);
+      }
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
         query = query.ilike('batch_code', '%$searchQuery%');

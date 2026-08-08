@@ -11,6 +11,8 @@ import '../../features/authentication/presentation/screens/login_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/screens/admin_users_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_user_screen.dart';
+import '../../features/admin/presentation/screens/admin_batches_screen.dart';
+import '../../features/admin/presentation/screens/admin_farms_centres_screen.dart';
 
 import '../../features/collection/presentation/screens/collection_dashboard_screen.dart';
 import '../../features/collection/presentation/screens/collection_farms_screen.dart';
@@ -156,6 +158,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin/alerts',
         name: RouteNames.adminAlerts,
         builder: (context, state) => const AlertsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/batches',
+        name: RouteNames.adminBatches,
+        builder: (context, state) => const AdminBatchesScreen(),
+      ),
+      GoRoute(
+        path: '/admin/farms-centres',
+        name: RouteNames.adminFarms,
+        builder: (context, state) => const AdminFarmsCentresScreen(),
       ),
       // Collection Module
       GoRoute(
